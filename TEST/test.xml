@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?><testsuite errors="0" failures="2" name="pytest" skips="0" tests="5" time="0.412"><testcase classname="test_lib.TestLib" file="test_lib.py" line="36" name="test_check_account_name" time="0.0"></testcase><testcase classname="test_lib.TestLib" file="test_lib.py" line="25" name="test_check_presence_message" time="0.0"><failure message="AttributeError: module &apos;server_lib&apos; has no attribute &apos;check_presence_message&apos;">self = &lt;test_lib.TestLib testMethod=test_check_presence_message&gt;
+
+    def test_check_presence_message(self):
+        presense_message = {
+        &apos;action&apos;: &apos;presence&apos;,
+        &apos;type&apos;: &apos;status&apos;,
+        &apos;user&apos;: {&apos;status&apos;: &apos;online&apos;}
+            }
+&gt;       self.assertDictEqual(server_lib.check_presence_message(presense_message), {&apos;response&apos;: &apos;400&apos;, &apos;error&apos;: &apos;Wrong request/JSON-object&apos;})
+E       AttributeError: module &apos;server_lib&apos; has no attribute &apos;check_presence_message&apos;
+
+TEST\test_lib.py:32: AttributeError</failure></testcase><testcase classname="test_lib.TestLib" file="test_lib.py" line="45" name="test_check_server_response" time="0.0"><failure message="AttributeError: module &apos;server_lib&apos; has no attribute &apos;check_server_response&apos;">self = &lt;test_lib.TestLib testMethod=test_check_server_response&gt;
+
+    def test_check_server_response(self):
+        response_code = &apos;202.2&apos;
+        with self.assertRaises(ResponseCodeError):
+&gt;           server_lib.check_server_response(response_code)
+E           AttributeError: module &apos;server_lib&apos; has no attribute &apos;check_server_response&apos;
+
+TEST\test_lib.py:49: AttributeError</failure></testcase><testcase classname="test_lib.TestLib" file="test_lib.py" line="21" name="test_message_decode" time="0.0"><system-out>вызов функции message_decode с аргументами: (b&apos;{&quot;login&quot;: &quot;Olga&quot;, &quot;password&quot;: &quot;ab12c5vh4&quot;}&apos;,), {} выполнен
+</system-out></testcase><testcase classname="test_lib.TestLib" file="test_lib.py" line="17" name="test_message_encode" time="0.0"><system-out>вызов функции message_encode с аргументами: ({&apos;login&apos;: &apos;Olga&apos;, &apos;password&apos;: &apos;ab12c5vh4&apos;},), {} выполнен
+</system-out></testcase></testsuite>

@@ -1,0 +1,7 @@
+[
+  "test_lib.py::TestLib::test_check_account_name",
+  "test_lib.py::TestLib::test_check_presence_message",
+  "test_lib.py::TestLib::test_check_server_response",
+  "test_lib.py::TestLib::test_message_decode",
+  "test_lib.py::TestLib::test_message_encode"
+]

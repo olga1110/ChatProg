@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Form</class>
+ <widget class="QWidget" name="Form">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>553</width>
+    <height>485</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <widget class="QPushButton" name="create_chat_button">
+   <property name="geometry">
+    <rect>
+     <x>110</x>
+     <y>40</y>
+     <width>311</width>
+     <height>81</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Создать ЧАТ</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="add_contact_button">
+   <property name="geometry">
+    <rect>
+     <x>110</x>
+     <y>240</y>
+     <width>311</width>
+     <height>81</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Добавить контакт</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="del_contact_button">
+   <property name="geometry">
+    <rect>
+     <x>110</x>
+     <y>340</y>
+     <width>311</width>
+     <height>81</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Удалить контакт</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="show_contacts_button">
+   <property name="geometry">
+    <rect>
+     <x>110</x>
+     <y>140</y>
+     <width>311</width>
+     <height>81</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Показать список контактов</string>
+   </property>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
