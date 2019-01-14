@@ -5,52 +5,76 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from GUI.chat_ui import Ui_Form as ui_chat
 from LIB.client import Client, Chat
-import LIB.client_lib as client_lib
 
 
+
+class ReadThread(QThread):
+    in_msg = pyqtSignal(str) # сигнал который мы будем передавать прогрессбару
+    def __init__(self, sock):
+        super().__init__()
+        self.sock = sock
+        self.chat_client = Chat(sock)
+        self.running = False
+    def run(self):
+        self.running = True
+        while self.running:
+            msg = self.chat_client.read_client_message()
+            print(msg)
+            if msg:
+                self.in_msg.emit(msg)
+
+
+class WriteThread(QThread):
+    out_msg = pyqtSignal(str)  # сигнал который мы будем передавать прогрессбару
+
+    def __init__(self, sock, msg, type_msg, to, login, session):
+        super().__init__()
+        self.sock = sock
+        self.msg = msg
+        self.type_msg = type_msg
+        self.to = to
+        self.login = login
+        self.session = session
+        self.chat_client = Chat(sock)
+        self.running = False
+
+    def run(self):
+        self.running = True
+        if self.type_msg == 'personal':
+            self.chat_client.client_write_person(self.msg, self.to, self.login, self.session)
+        else:
+            self.chat_client.client_write_chat(self.msg, self.login, self.session)
+        self.out_msg.emit(self.msg)
 
 
 class CChatForm(QtWidgets.QWidget):
     incomeMessage = QtCore.pyqtSignal(str)
-    def __init__(self, sock, mode, account_name, level, session, parent=None):
+    def __init__(self, sock, account_name, level, session, parent=None):
         super().__init__(parent)
         self.ui = ui_chat()
-        self.ui.mode = mode
+        self.sock = sock
         self.ui.level = level
         self.ui.session = session
-        # self.chat_textBrowser.incomeMessage.connect(self.read_message)
-        # self.ui.chat_textBrowser.connect(self.get_msg_value)
-        # self.connect(self.ui.chat_textBrowser, QtCore.SIGNAL())
-        self.timer = QtCore.QTimer()
-        self.timer.timeout.connect(self.read_message)
-
-
+        # timer = QtCore.QTimer(self)
+        # timer.start(3000)
+        # timer.timeout.connect(self.read_message)
         self.ui.setupUi(self)
-        self.ui.mode_textBrowser.setText(mode)
         self.ui.user_textBrowser.setText(account_name)
         self.ui.account_name = account_name
-        # self.ui.chat_textBrowser.setText(self.read_message)
         self.ui.send_button.clicked.connect(self.write_message)
-        # QtCore.QObject.connect(self.ui.chat_textBrowser, QtCore.SIGNAL("activated(const QString&)"),
-        #                        self.read_message)
-        self.chat_client = Chat(sock)
-        self.timer.start(1000)
+        self.ui.exit_button.clicked.connect(self.close)
+        #self.chat_client = Chat(sock)
 
-    # def on_changed_value(self, msg):
-    #     # Активируем сигнал
-    #     self.incomeMessage.emit(msg)
-    #
-    # # Создаём Qt-слот
-    # @pyqtSlot(int)
-    # def get_msg_value(self, msg):
-    #     self.ui.chat_textBrowser.setText(msg)
+        self.thread = ReadThread(self.sock)
+        self.thread.in_msg.connect(self.on_ReadThreadSignal)
+        self.thread.start()
+
     def login_required(r_level):
         def decorator(func):
-            def decorated2(self):
+            def decorated2(self, *args):
                 f_level = int(self.ui.level)
                 if r_level >= f_level:
-                    # if kwargs['level'] == 1:
-                    result = func(self)
+                    result = func(self, *args)
                     return result
                 else:
                     QMessageBox.warning(None, 'Warning','Для выполнения данной операции необходим {}-й уровень доступа'.format(r_level))
@@ -58,30 +82,53 @@ class CChatForm(QtWidgets.QWidget):
             return decorated2
         return decorator
 
-    @login_required(3)
-    def read_message(self):
-        if self.ui.mode == 'Чтение':
-            # client_lib.client_mes_read(sock)
-            msg = self.chat_client.read_client_message()
-            if msg:
-                self.ui.chat_textBrowser.append(msg)
+    # @login_required(3)
+    # def read_message(self):
+    #     msg = self.chat_client.read_client_message()
+    #     print(msg)
+    #     if msg:
+    #         self.ui.chat_textBrowser.append(msg)
 
     @login_required(3)
-    def write_message(self):
+    def write_message(self, sock):
         msg = self.ui.send_mes.toPlainText()
+
         if msg == "":
             QMessageBox.warning(None, 'Warning', 'Нельзя отправить пустое сообщение. Введите текст')
             return True
         reply = QMessageBox.question(self, 'System_question', 'Отправить сообщение в общий чат?', QMessageBox.Yes | QMessageBox.No,
                                      QMessageBox.No)
-        if reply == QMessageBox.No:
-            to, ok = QtWidgets.QInputDialog.getText(self, 'System_question', 'Кому доставить сообщение? Введите логин: ')
-            if ok:
-                # msg_rcv = self.chat_client.get_client_key(to)
-                # print(msg_rcv)
-                self.chat_client.client_write_person(msg, to, self.ui.account_name, self.ui.session)
+        if reply == QMessageBox.Yes:
+            type_msg = 'chat'
+            to = 'chat'
         else:
-            self.chat_client.client_write_chat(msg, self.ui.account_name, self.ui.session)
-        self.ui.chat_textBrowser.append("<font color='red' > My message: {}</font>".format(msg))
+            type_msg = 'personal'
+            to, _ = QtWidgets.QInputDialog.getText(self, 'System_question', 'Кому доставить сообщение? Введите логин: ')
+
+        self.thread1 = WriteThread(self.sock, msg, type_msg, to, self.ui.account_name, self.ui.session)
+
+        self.thread1.out_msg.connect(self.on_WriteThreadSignal)
+        self.thread1.start()
+
+    def on_WriteThreadSignal(self, value):
+        self.ui.chat_textBrowser.append("<font color='red' > My message: {}</font>".format(value))
         self.ui.send_mes.clear()
 
+    def on_ReadThreadSignal(self, value):
+        self.ui.chat_textBrowser.append(value)
+
+    # def close(self):
+    #     self.thread.running = False
+    #     self.close()
+        #кнопка ВЫХОД
+
+    def closeEvent(self, event):
+
+        reply = QMessageBox.question(self, 'Message',
+            "Выйти из Чата?", QMessageBox.Yes |
+            QMessageBox.No, QMessageBox.No)
+
+        if reply == QMessageBox.Yes:
+            event.accept()
+        else:
+            event.ignore()

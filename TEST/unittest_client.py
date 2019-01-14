@@ -7,7 +7,7 @@ import time
 class CTestClientLib(unittest.TestCase):
     def test_client(self):
         data = {
-            'action': 'presence',
+            'action': 'presense',
             'time': time.time(),
             'type': 'status',
             'user': {

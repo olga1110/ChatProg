@@ -1,13 +1,16 @@
 # Реализовать декоратор @log, фиксирующий обращение к декорируемой функции: сохраняет имя функции и её аргументы.
 
-
+import sys
 import json
 import time
 # import logging
 # from log_config import log_client_init
 from functools import wraps
+sys.path.append("..")
+from log_config import create_client_log
 
 
+logger = create_client_log('client_log.log')
 # log_client = logging.getLogger("client_messanger_log")
 # log_client = None
 
@@ -19,18 +22,17 @@ def log_console(func):
     @wraps(func)
     def wrap(*args, **kwargs):
         result = func(*args, **kwargs)
-        # log_client.debug(func.__doc__)
+        logger.debug(func.__doc__)
         if __debug__:
-            print('вызов функции {} с аргументами: {}, {} выполнен'. format(func.__name__, args, kwargs))
+            print('вызов функции {} с аргументами: {}, {} выполнен'.format(func.__name__, args, kwargs))
         return result
-    return wrap
 
+    return wrap
 
 @log_console
 def message_encode(ex_data):
     """Кодирование выполнено. Сообщение готово к отправке"""
     return (json.dumps(ex_data)).encode('utf-8')
-
 
 @log_console
 def message_decode(im_data):
@@ -38,83 +40,97 @@ def message_decode(im_data):
     return json.loads(im_data.decode('utf-8'))
 
 
-@log_console
-def main_loop_for_client(sock, data):
-    """Клиент отправил presense сообщение и получил ответ от сервера"""
-    data_buf = message_encode(data)
-    sock.send(data_buf)
-    result_buf = sock.recv(1024)
-    result = message_decode(result_buf)
-    if not isinstance(result, dict):
-        # log_client.error('От сервера получен неверный формат ответа')
-        raise TypeError
-    return result
 
+class ClientHandler:
 
-@log_console
-def client_mes_read(sock):
-    """Получено клиентское сообщение"""
-    msg_from_server = sock.recv(1024)
-    input_message = message_decode(msg_from_server)
-    if 'type' in input_message:
-        if input_message['action'] == 'msg':
-            print("{}: {}".format(input_message['from'], input_message['message']))
-    #     elif input_message['action'] == 'contact_list':
-    #         print(input_message)
-    # else:
-    #     print('Получен ответ от сервера: {}'.format(input_message))
-    return "{}: {}".format(input_message['from'], input_message['message'])
+    def log_console(func):
+        # global log_client
+        # if log_client is None:
+        # log_client = log_client_init()
+        @wraps(func)
+        def wrap(*args, **kwargs):
+            result = func(*args, **kwargs)
+            # log_client.debug(func.__doc__)
+            if __debug__:
+                print('вызов функции {} с аргументами: {}, {} выполнен'. format(func.__name__, args, kwargs))
+            return result
+        return wrap
 
-@log_console
-def read_server_response_contacts(sock):
-    """Получен ответ от сервера с общим кол-ом контактов"""
-    msg_from_server = sock.recv(4096)
-    input_message = message_decode(msg_from_server)
-    if 'action' not in input_message:
-        count = input_message['quantity']
-        return count
-    return input_message
+    @staticmethod
+    @log_console
+    def start_for_client(sock, data):
+        """Отправка и получение presense/registr сообщений"""
+        data_buf = message_encode(data)
+        sock.send(data_buf)
+        result_buf = sock.recv(1024)
+        result = message_decode(result_buf)
+        if not isinstance(result, dict):
+            # log_client.error('От сервера получен неверный формат ответа')
+            raise TypeError
+        return result
 
-@log_console
-def client_write_chat(sock, msg, account_name, session):
-    """Отправлено клиентское сообщение"""
-    msg_chart = ChatMessage(account_name, 'msg', 'chat', msg, session).get_client_message()
-    msg_to_server = message_encode(msg_chart)
-    sock.send(msg_to_server)
-    print(msg_chart)
-    return msg_chart
+    @staticmethod
+    @log_console
+    def client_mes_read(sock):
+        """Получено клиентское сообщение"""
+        msg_from_server = sock.recv(1024)
+        input_message = message_decode(msg_from_server)
+        return "{}: {}".format(input_message['from'], input_message['message'])
 
+    @staticmethod
+    @log_console
+    def read_server_response_contacts(sock):
+        """Получен ответ от сервера с общим кол-ом контактов"""
+        msg_from_server = sock.recv(4096)
+        input_message = message_decode(msg_from_server)
+        if 'action' not in input_message:
+            count = input_message['quantity']
+            return count
+        return input_message
 
-@log_console
-def client_write_person(sock, msg, to, account_name, session):
-    """Отправлено private - сообщение клиенту"""
-    personal_msg = PrivateMessage(account_name, 'msg', 'personal', to, msg, session).get_client_message()
-    msg_to_server = message_encode(personal_msg)
-    sock.send(msg_to_server)
-    return personal_msg
+    @staticmethod
+    @log_console
+    def client_write_chat(sock, msg, account_name, session):
+        """Отправлено клиентское сообщение"""
+        msg_chart = ChatMessage(account_name, 'msg', 'chat', msg, session).get_client_message()
+        msg_to_server = message_encode(msg_chart)
+        sock.send(msg_to_server)
+        print(msg_chart)
+        return msg_chart
 
+    @staticmethod
+    @log_console
+    def client_write_person(sock, msg, to, account_name, session):
+        """Отправлено private - сообщение клиенту"""
+        personal_msg = PrivateMessage(account_name, 'msg', 'personal', to, msg, session).get_client_message()
+        msg_to_server = message_encode(personal_msg)
+        sock.send(msg_to_server)
+        return personal_msg
 
-@log_console
-def get_contacts(sock, session):
-    request = {'action': 'get_contacts', 'session': session, 'time': time.time()}
-    request_snd = message_encode(request)
-    sock.send(request_snd)
-    return request
+    @staticmethod
+    @log_console
+    def get_contacts(sock, session):
+        request = {'action': 'get_contacts', 'session': session, 'time': time.time()}
+        request_snd = message_encode(request)
+        sock.send(request_snd)
+        return request
 
+    @staticmethod
+    @log_console
+    def get_request_modify(sock, action, nickname, session):
+        request = {'action': action, 'user_id': nickname, 'session': session, 'time': time.time()}
+        print(request)
+        request_snd = message_encode(request)
+        sock.send(request_snd)
+        return request
 
-@log_console
-def get_request_modify(sock, action, nickname, session):
-    request = {'action': action, 'user_id': nickname, 'session': session, 'time': time.time()}
-    request_snd = message_encode(request)
-    sock.send(request_snd)
-    return request
-
-@log_console
-def create_chat(sock, chat_name, users_id, session):
-    request = {'action': 'create_chat', 'chat_name': chat_name, 'session': session, 'users': users_id}
-    request_snd = message_encode(request)
-    sock.send(request_snd)
-    return request
+    @staticmethod
+    @log_console
+    def create_chat(sock, chat_name, users_id, session):
+        request = {'action': 'create_chat', 'chat_name': chat_name, 'session': session, 'users': users_id}
+        request_snd = message_encode(request)
+        sock.send(request_snd)
+        return request
 
 
 class CDesc:
@@ -151,7 +167,6 @@ class JIMMessage:
             'time': time.time(),
             'type': self.type
         }
-
 
     @log_console
     def get_client_message(self):

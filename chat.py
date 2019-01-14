@@ -13,55 +13,40 @@ from GUI.General_form_ui import Ui_General_Form as ui_form
 from GUI.ManageForm import CManageForm
 from LIB.client import Client, Chat, ListContacts
 from DB.DB_classes import *
-from LIB.client_lib import *
 
 
 # Параметры подключения клиента
 try:
-    addr = sys.argv[2]
+    addr = sys.argv[1]
 except IndexError:
     addr = 'localhost'
 
 try:
-    port = int(sys.argv[3])
+    port = int(sys.argv[2])
 except IndexError:
     port = 7777
 except ValueError:
     print('Задайте целочисленное значение для порта')
     sys.exit(0)
 
-try:
-    if sys.argv[1] in ('r', 'w'):
-        mode = sys.argv[1]
-except IndexError:
-    # открываем по умолчанию на чтение
-    mode = 'r'
-
-if mode == 'w':
-    mode_to_form = 'Запись'
-else:
-    mode_to_form = 'Чтение'
-
 
 # Подключение к базе данных
-engine = create_engine('sqlite:///clients_messages.db')
-session = sessionmaker(bind=engine)()
+# engine = create_engine('sqlite:///clients_messages.db')
+# session = sessionmaker(bind=engine)()
 
 
 class CMainWindow(QtWidgets.QMainWindow):
 
-    def __init__(self, mode, parent=None):
+    def __init__(self, parent=None):
 
         super().__init__(parent)
 
         self.ui = ui_class()
         self.ui.setupUi(self)
-        self.ui.mode = mode
-        self.ui.mode_textBrowser.setText(mode)
-        # self.error_dialog = QtWidgets.QErrorMessage()
         self.ui.enter_button.clicked.connect(self.get_login_input)
         self.ui.registr_button.clicked.connect(self.make_registr)
         self.ui.checkBox_registr.stateChanged.connect(self.show_registr)
+        self.ui.online_RB.setChecked(True)
         self.ui.password_text_1.hide()
         self.ui.pass1_label.hide()
         self.ui.level_combobox.addItem('1')
@@ -103,14 +88,11 @@ class CMainWindow(QtWidgets.QMainWindow):
             password = self.ui.password_text.toPlainText()
             password1 = self.ui.password_text_1.toPlainText()
             result = self.s.get_register_response(login, level, password, password1)
-            print(result)
             if result['response'] != 200:
                 QMessageBox.warning(None, 'Warning', result['info'])
                 return
             else:
                 self.create_message_box(result['info'], 'Регистрация')
-                # self.ui.general_form = CGeneralForm(s.s, self.ui.mode, login)
-                # self.ui.general_form.show()
                 self.ui.checkBox_registr.setChecked(False)
                 self.ui.password_text.clear()
 
@@ -120,45 +102,55 @@ class CMainWindow(QtWidgets.QMainWindow):
         user_name = self.ui.login_text.toPlainText()
         level = self.ui.level_combobox.currentText()
         password = self.ui.password_text.toPlainText()
-
-
         if user_name == "":
             QMessageBox.warning(None, 'Warning', 'Не указан логин')
             return
-
         account_name = s.get_account_name(user_name)
-        user_status = s.get_user_status()
+
+        if self.ui.online_RB.isChecked():
+            user_status = 'Y'
+        else:
+            user_status = 'N'
         # presense-сообщение и ответ сервера
         result = s.get_presense_response(account_name, user_status, level, password)
         if result['response'] == 202:
             # получить код сессии
             session = s.s.recv(1024).decode('utf-8')
-            self.ui.general_form = CGeneralForm(s.s, self.ui.mode, account_name, level, session)
+            self.ui.general_form = CGeneralForm(s.s, account_name, level, session)
             self.ui.general_form.show()
         else:
-            self.create_message_box('Login is incorrect!')
+            self.create_message_box(result['error'], 'Доступ запрещен')
         return account_name
+
+    def closeEvent(self, event):
+
+        reply = QMessageBox.question(self, 'Message', 'Выйти из Talk-Messenger?',
+                                     QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+
+        if reply == QMessageBox.Yes:
+            event.accept()
+        else:
+            event.ignore()
 
 
 class CGeneralForm(QtWidgets.QWidget):
 
-    def __init__(self, sock, mode, account_name, level, session, parent=None):
+    def __init__(self, sock, account_name, level, session, parent=None):
 
         super().__init__(parent)
         self.ui = ui_form()
         self.ui.setupUi(self)
-        self.ui.mode = mode
         self.ui.sock = sock
         self.ui.account_name = account_name
         self.ui.level = level
         self.ui.session = session
 
     def on_chat_button_pressed(self):
-        self.ui.chat_form = CChatForm(self.ui.sock, self.ui.mode, self.ui.account_name, self.ui.level, self.ui.session)
+        self.ui.chat_form = CChatForm(self.ui.sock, self.ui.account_name, self.ui.level, self.ui.session)
         self.ui.chat_form.show()
 
     def on_contacts_button_pressed(self):
-        self.ui.manage_form = CManageForm(self.ui.sock, self.ui.mode, self.ui.account_name, self.ui.level, self.ui.session)
+        self.ui.manage_form = CManageForm(self.ui.sock, self.ui.account_name, self.ui.level, self.ui.session)
         self.ui.manage_form.show()
 
 
@@ -166,7 +158,7 @@ if __name__ == '__main__':
 
     # Запуск формы
     app = QtWidgets.QApplication(sys.argv)
-    window = CMainWindow(mode_to_form)
+    window = CMainWindow()
     window.show()
     sys.exit(app.exec_())
 

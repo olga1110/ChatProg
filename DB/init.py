@@ -148,9 +148,72 @@ cursor = conn.cursor()
 
 # проверка записей
 if __name__ == '__main__':
-    # cursor.execute('select* from users')
-    # cursor.execute('select* from messages')
-    # cursor.execute('select* from op_client')
-    cursor.execute('select* from contacts_list')
+    # cursor.execute("delete from users where login = 'Alex'")
+    # conn.commit()
+    # cursor.execute("select level from users where login = 'Alex'")
+    cursor.execute("select* from groups")
+    #
+    # # cursor.execute('select* from messages')
+    # # cursor.execute('select* from groups')
+    # # cursor.execute('select* from contacts_list')
     print(cursor.fetchall())
 
+    login = 'Alex'
+    # result = cursor.execute("select p.guid from users as u inner join password as p on u.password = p.guid where u.login = ?", (login,))
+    # pid = result.fetchall()[0][0]
+    # print(pid)
+    # cursor.execute('delete from users where login = ?', login)
+    # cursor.execute('delete from password where guid = pid')
+    # conn.commit()
+
+    # result = cursor.execute("select p.guid from (select* from users where login = ?) as u inner join password as p on u.password = p.guid", ([login]))
+    # print(result.fetchall()[0][0])
+
+# with conn:
+#     conn.cursor().execute('select* from users')
+    # query = "INSERT OR IGNORE INTO shapes VALUES (?,?);"
+    # results = conn.execute(query, ("ID1","triangle"))
+
+# Менеджер контекста------------------------------------------------
+class CWith():
+    def __init__(self, engine):
+
+        # self.conn = sqlite3.connect("messages.db")
+        # self.cursor = self.conn.cursor()
+        self.engine = engine
+        self.session = sessionmaker(bind=engine)()
+
+
+    # def __iter__(self):
+    #     for item in self.cursor:
+    #         yield item
+
+    def __enter__(self):
+        return self.session
+
+    def __exit__(self, err, value, traceback):
+        if isinstance(err, Exception):
+            self.conn.rollback()
+        # elif sqlite3.IntegrityError:
+        #     print('Транзакция отклонена')
+        else:
+            self.conn.commit()
+
+
+
+# conn = CWith()
+
+# with conn as cursor:
+#
+#     cursor.execute("insert or ignore into groups values(52, 'test2')")
+#     cursor.execute("insert or ignore into groups values(11, 'test1')")
+# #     cursor.update(...)
+#
+# with conn as cursor:
+#
+# cursor.execute("delete from groups where group_name = 'test'")
+# conn.commit()
+#     print('Done')
+
+cursor.execute("select* from users")
+print(cursor.fetchall())

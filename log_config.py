@@ -5,62 +5,53 @@
 # Журналирование должно производиться в лог-файл.
 # На стороне сервера необходимо настроить ежедневную ротацию лог-файлов
 
-
+import sys
 import logging
-import logging.handlers
+from logging.handlers import TimedRotatingFileHandler
 
+def create_server_log(path):
 
-# logger = None
-# log_client = None
-
-
-def log_serv_init():
-
-    # global logger
-    logger = logging.getLogger("server_messanger_log")
-    logger_file_name = 'server_messanger_log.log'
-    fn = logging.handlers.TimedRotatingFileHandler(logger_file_name, when='D',
-                                            interval=1,
-                                            backupCount=31)
-
-    fn.setLevel(logging.DEBUG)
-    # file_error_handler = logging.handlers.TimedRotatingFileHandler("error_messanger.log", when="M",
-    #                                         interval=1,
-    #                                         backupCount=31)
-
-    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(module)s - %(funcName)s - %(message)s',
-                                  datefmt='%Y-%m-%d %H:%M:%S')
-
-    fn.setFormatter(formatter)
-
-    logger.addHandler(fn)
+    logger = logging.getLogger("server_log")
     logger.setLevel(logging.DEBUG)
+    _format = logging.Formatter('%(asctime)s - %(levelname)s - %(module)s - %(funcName)s - %(message)s',
+                                datefmt='%Y-%m-%d %H:%M:%S')
+    f_handler = logging.handlers.TimedRotatingFileHandler(path, when='D',
+                                               interval=1, backupCount=31)
+    f_handler.setFormatter(_format)
+    f_handler.setLevel(logging.DEBUG)
+    logger.addHandler(f_handler)
+
+    s_handler = logging.StreamHandler(sys.stdout)
+    s_handler.setLevel(logging.DEBUG)
+    s_handler.setFormatter(_format)
+    logger.addHandler(s_handler)
     return logger
 
+def create_client_log(path):
 
-# logger.addHandler(file_error_handler)
-# file_error_handler.setFormatter(formatter)
-# file_error_handler.setLevel(logging.ERROR)
+    logger = logging.getLogger("client_log")
+    logger.setLevel(logging.DEBUG)
+    _format = logging.Formatter('%(asctime)s - %(levelname)s - %(module)s - %(funcName)s - %(message)s',
+                                datefmt='%Y-%m-%d %H:%M:%S')
+    f_handler = logging.handlers.TimedRotatingFileHandler(path, when='D',
+                                               interval=1, backupCount=31)
+    f_handler.setFormatter(_format)
+    f_handler.setLevel(logging.DEBUG)
+    logger.addHandler(f_handler)
 
-def log_client_init():
+    s_handler = logging.StreamHandler(sys.stdout)
+    s_handler.setLevel(logging.DEBUG)
+    s_handler.setFormatter(_format)
+    logger.addHandler(s_handler)
 
-    # global log_client
-    log_client = logging.getLogger("client_messanger_log")
-    log_cl_file_name = 'client_messanger_log.log'
+    return logger
 
-    fn_client = logging.handlers.TimedRotatingFileHandler(log_cl_file_name, when='D',
-                                            interval=1,
-                                            backupCount=31)
+# ----------------------------------------------------------------------
+# if __name__ == "__main__":
+#     logger = create_server_log('server_log.log')
 
-    fn_client.setLevel(logging.DEBUG)
 
-    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(module)s - %(funcName)s - %(message)s',
-                                  datefmt='%Y-%m-%d %H:%M:%S')
 
-    fn_client.setFormatter(formatter)
-    log_client.addHandler(fn_client)
-    log_client.setLevel(logging.DEBUG)
-    return log_client
 
 
 

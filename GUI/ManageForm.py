@@ -4,18 +4,16 @@ from PyQt5.QtWidgets import QApplication, QWidget, QMessageBox
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from GUI.manage_contacts_ui import Ui_Form as manage_form
-from LIB.client import Client, Chat, ListContacts
-import LIB.client_lib as client_lib
+import LIB.client as client
 
 
 class CManageForm(QtWidgets.QWidget):
 
-    def __init__(self, sock, mode, account_name, level, session, parent=None):
+    def __init__(self, sock, account_name, level, session, parent=None):
         super().__init__(parent)
         self.ui = manage_form()
         self.ui.setupUi(self)
         self.ui.sock = sock
-        self.ui.mode = mode
         self.ui.account_name = account_name
         self.ui.level = level
         self.ui.session = session
@@ -23,7 +21,8 @@ class CManageForm(QtWidgets.QWidget):
         self.ui.add_contact_button.clicked.connect(self.add_contacts)
         self.ui.del_contact_button.clicked.connect(self.del_contacts)
         self.ui.create_chat_button.clicked.connect(self.create_chat)
-        self.list_contacts = ListContacts(sock)
+        self.list_contacts = client.ListContacts(sock)
+        # self._handler = Client.ClientHandler()
 
     def login_required(r_level):
         def decorator(func):
@@ -78,7 +77,7 @@ class CManageForm(QtWidgets.QWidget):
         if ok:
             self.list_contacts.get_request_modify(action, nickname, self.ui.session)
             server_response_rcv = self.ui.sock.recv(4096)
-            server_response = client_lib.message_decode(server_response_rcv)
+            server_response = client.ClientHandler.message_decode(server_response_rcv)
             if server_response['response'] == 202:
                 self.create_message_box('Операция выполнена успешно', 'Добавить контакт')
             else:
@@ -95,9 +94,9 @@ class CManageForm(QtWidgets.QWidget):
                                                           'Введите логин для удаления пользователя: ')
 
         if ok:
-            self.list_contacts.get_request_modify(action, nickname)
+            self.list_contacts.get_request_modify(action, nickname, self.ui.session)
             server_response_rcv = self.ui.sock.recv(4096)
-            server_response = client_lib.message_decode(server_response_rcv)
+            server_response = client.ClientHandler.message_decode(server_response_rcv)
             if server_response['response'] == 202:
                 self.create_message_box('Операция выполнена успешно', 'Удалить контакт')
             else:
@@ -134,5 +133,6 @@ class CManageForm(QtWidgets.QWidget):
 
             self.list_contacts.create_chat(chat_name, users_id, self.ui.session)
             server_response_rcv = self.ui.sock.recv(4096)
-            server_response = client_lib.message_decode(server_response_rcv)
+            print(server_response_rcv)
+            server_response = client.ClientHandler.message_decode(server_response_rcv)
             self.create_message_box('{}\n{}'.format(server_response['result'], server_response['error']), 'Create')

@@ -10,7 +10,7 @@ class CPassword(CBase):
 
     __tablename__ = 'password'
 
-    guid = Column(Integer(), primary_key = True)
+    guid = Column(Integer(), primary_key=True)
     h = Column(Unicode(), nullable=False)
 
     def __repr__(self):
@@ -152,10 +152,6 @@ if __name__ == '__main__':
         print(i)
 
 
-
-
-
-
     # print(result)
 
     # result = session.query(CUsers).all()
@@ -175,3 +171,8 @@ if __name__ == '__main__':
     #     print(s, s.p_user_from, s.p_user_to)
 
     # session.add_all()
+    data = 'Olga'
+
+
+    result = session.query(CUsers).filter_by(login=data).all()
+    print(result.fetchall()[0][0])
