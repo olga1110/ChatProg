@@ -35,8 +35,6 @@ port = args.port
 path_db = os.path.join(os.getcwd(), 'DB', 'messages.db')
 engine = create_engine('sqlite:///' + path_db)
 session = sessionmaker(bind=engine)()
-conn = sqlite3.connect(path_db, check_same_thread=False)
-# cursor = conn.cursor()
 
 
 class Server(Thread, metaclass=Singleton):
@@ -96,7 +94,7 @@ class Server(Thread, metaclass=Singleton):
                                 self._db.insert_new_user(data)
                             self.handler.send_response_to_client(conn, result)
 
-                    # Запрос на авторизацию (presense)
+                    # Запрос на авторизацию (presence)
                         if data['action'] == 'presense':
                             result = self.handler.create_presense_response(data)
                             self.handler.send_response_to_client(conn, result)

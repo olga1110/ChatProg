@@ -6,17 +6,11 @@ import re
 from functools import wraps
 import hashlib
 
-import sqlite3
-from sqlalchemy import Column, Integer, Unicode, UniqueConstraint, ForeignKey, create_engine
-from sqlalchemy.orm import sessionmaker, relationship
-from sqlalchemy.ext.declarative import declarative_base
+sys.path.append(os.path.dirname(__file__) + '/../')
+
 import LIB.salt as salt
 from LIB.errors import AccountNameError, ResponseCodeError
-
-sys.path.append(os.path.join(os.getcwd(), 'DB'))
-sys.path.append("..")
 from DB.DB_classes import *
-
 from log_config import create_server_log
 
 logger = create_server_log('server_log.log')
@@ -121,7 +115,8 @@ class ServerHandler:
     @log
     def create_registr_response(self, data):
         """Обработка запроса на регистрацию нового клиента в системе"""
-        pattern_password = '([\d\w\])([!@#$%^&*]){8,}'
+        # pattern_password = '([\d+\w\])([!@#$%^&*]){8,}'
+        pattern_password = re.compile(r'([\d+\w\])([!@#$%^&*]){8,}')
         if re.search(pattern_password, data['password']) is None:
             result = {'response': 402,
                       'info': 'Задан неверный пароль! Пароль должен содержать не менее 8 символов, включая строчные '
@@ -219,6 +214,7 @@ class JIMResponse:
         self.data = data
         self.session = session
         self.engine = engine
+        self._server_response = {'response': 202, 'alert': 'Login is accepted'}
 
     @property
     def server_response(self):
@@ -237,17 +233,17 @@ class JIMResponse:
                                           ' and u.login = ? and u.level = ?',
                                           (self.data['user']['account_name'], self.data['user']['level']))
             if len(result) == 0:
-                self._server_response = {'response': 402, 'error': 'Логин не зарегистрирован!'}
+                self._server_response = {'response': 402, 'error': 'Login is not registered!'}
             elif len(result1) == 0:
                 self._server_response = {'response': 402,
-                                         'error': 'уровень доступа {} для логина {} не зарегистрирован!'.format(
+                                         'error': '{}th level of access for login {} is not registered!'.format(
                                              self.data['user']['level'], self.data['user']['account_name'])}
+
             elif result2.fetchall()[0][0] != h:
                 self._server_response = {'response': 402,
-                                         'error': 'Неверный пароль для логина {} и {} уровня доступа'.format(
+                                         'error': 'Wrong password for login {} and {}th level of access'.format(
                                              self.data['user']['account_name'], self.data['user']['level'])}
-            else:
-                self._server_response = {'response': 202, 'alert': 'Login is accepted'}
+
         return self._server_response
 
 
