@@ -4,12 +4,11 @@ from PyQt5.QtWidgets import QApplication, QWidget, QMessageBox
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from GUI.chat_ui import Ui_Form as ui_chat
-from LIB.client import Client, Chat
-
+from LIB.client import Client, Chat, ListContacts
 
 
 class ReadThread(QThread):
-    in_msg = pyqtSignal(str) # сигнал который мы будем передавать прогрессбару
+    in_msg = pyqtSignal(str)
     def __init__(self, sock):
         super().__init__()
         self.sock = sock
@@ -25,7 +24,7 @@ class ReadThread(QThread):
 
 
 class WriteThread(QThread):
-    out_msg = pyqtSignal(str)  # сигнал который мы будем передавать прогрессбару
+    out_msg = pyqtSignal(str)
 
     def __init__(self, sock, msg, type_msg, to, login, session):
         super().__init__()
@@ -47,8 +46,17 @@ class WriteThread(QThread):
         self.out_msg.emit(self.msg)
 
 
+class ComboBox(QtWidgets.QComboBox):
+    popupAboutToBeShown = QtCore.pyqtSignal()
+
+    def showPopup(self):
+        self.popupAboutToBeShown.emit()
+        super(ComboBox, self).showPopup()
+
+
 class CChatForm(QtWidgets.QWidget):
     incomeMessage = QtCore.pyqtSignal(str)
+
     def __init__(self, sock, account_name, level, session, parent=None):
         super().__init__(parent)
         self.ui = ui_chat()
@@ -63,6 +71,12 @@ class CChatForm(QtWidgets.QWidget):
         self.ui.account_name = account_name
         self.ui.send_button.clicked.connect(self.write_message)
         self.ui.exit_button.clicked.connect(self.close)
+        self.ui.Private_RB.setChecked(True)
+        self.list_contacts = ListContacts(sock)
+        # self.ui.list_contacts_comboBox.activated[str].connect(self.load_contacts)
+        self.combo = ComboBox(self)
+        self.combo.addItem('Выберите контакт')
+        self.combo.popupAboutToBeShown.connect(self.populateConbo)
         #self.chat_client = Chat(sock)
 
         self.thread = ReadThread(self.sock)
@@ -77,7 +91,7 @@ class CChatForm(QtWidgets.QWidget):
                     result = func(self, *args)
                     return result
                 else:
-                    QMessageBox.warning(None, 'Warning','Для выполнения данной операции необходим {}-й уровень доступа'.format(r_level))
+                    QMessageBox.warning(None, 'Warning', 'Для выполнения данной операции необходим {}-й уровень доступа'.format(r_level))
                     return
             return decorated2
         return decorator
@@ -88,6 +102,9 @@ class CChatForm(QtWidgets.QWidget):
     #     print(msg)
     #     if msg:
     #         self.ui.chat_textBrowser.append(msg)
+
+    def hide_contacts(self):
+        self.combo.hide()
 
     @login_required(3)
     def write_message(self, sock):
@@ -120,12 +137,32 @@ class CChatForm(QtWidgets.QWidget):
     # def close(self):
     #     self.thread.running = False
     #     self.close()
-        #кнопка ВЫХОД
+
+
+    def get_contacts(self):
+        self.list_contacts.client_get_contacts(self.ui.session)
+        count = self.list_contacts.read_server_response_contacts()
+        list = []
+        for _ in range(count):
+            server_response = self.list_contacts.read_server_response_contacts()
+            list.append(server_response['user_id'])
+        if list:
+            return list
+        else:
+            return ['<Пусто>']
+    #
+    # def load_contacts(self):
+    #     self.ui.list_contacts_comboBox.addItems(self.get_contacts)
+
+    def populateConbo(self):
+        print(self.combo.count())
+        if self.combo.count() == 1:
+            list_contacts = self.get_contacts()
+            self.combo.addItems(list_contacts)
 
     def closeEvent(self, event):
-
         reply = QMessageBox.question(self, 'Message',
-            "Выйти из Чата?", QMessageBox.Yes |
+            "Выйти из ЧАТа?", QMessageBox.Yes |
             QMessageBox.No, QMessageBox.No)
 
         if reply == QMessageBox.Yes:

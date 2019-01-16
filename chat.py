@@ -7,7 +7,7 @@ from sqlalchemy import Column, Integer, Unicode, UniqueConstraint, ForeignKey, c
 from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy.ext.declarative import declarative_base
 from Crypto.PublicKey import RSA
-from GUI.messanger_ui import Ui_MainWindow as ui_class
+from GUI.messenger_ui import Ui_MainWindow as ui_class
 from GUI.ChatForm import CChatForm
 from GUI.General_form_ui import Ui_General_Form as ui_form
 from GUI.ManageForm import CManageForm
@@ -49,9 +49,7 @@ class CMainWindow(QtWidgets.QMainWindow):
         self.ui.online_RB.setChecked(True)
         self.ui.password_text_1.hide()
         self.ui.pass1_label.hide()
-        self.ui.level_combobox.addItem('1')
-        self.ui.level_combobox.addItem('2')
-        self.ui.level_combobox.addItem('3')
+        self.ui.level_combobox.addItems(['1', '2', '3'])
         self.s = Client(addr, port)
 
         # Генерируем пару ключей
@@ -124,7 +122,7 @@ class CMainWindow(QtWidgets.QMainWindow):
 
     def closeEvent(self, event):
 
-        reply = QMessageBox.question(self, 'Message', 'Выйти из Talk-Messenger?',
+        reply = QMessageBox.question(self, 'Message', 'Выйти из ChatFree?',
                                      QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
 
         if reply == QMessageBox.Yes:

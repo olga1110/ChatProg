@@ -225,7 +225,8 @@ class Chat:
         """Чтение сообщения"""
         msg_from_server = self.s.recv(1024)
         input_message = ClientHandler.message_decode(msg_from_server)
-        return "{}: {}".format(input_message['from'], input_message['message'])
+        if input_message.get('from'):
+            return "{}: {}".format(input_message['from'], input_message['message'])
 
     @ClientHandler.log
     def client_write_chat(self, msg, account_name, session):
