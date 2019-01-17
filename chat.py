@@ -111,8 +111,8 @@ class CMainWindow(QtWidgets.QMainWindow):
             user_status = 'Y'
         else:
             user_status = 'N'
-        # presense-сообщение и ответ сервера
-        result = s.get_presense_response(account_name, user_status, level, password)
+        # presence-сообщение и ответ сервера
+        result = s.get_presence_response(account_name, user_status, level, password)
         if result['response'] == 202:
             # получить код сессии
             session = s.s.recv(1024).decode('utf-8')

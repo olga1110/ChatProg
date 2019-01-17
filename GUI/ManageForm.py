@@ -111,30 +111,37 @@ class CManageForm(QtWidgets.QWidget):
 
         chat_name, ok = QtWidgets.QInputDialog.getText(self, 'Create',
                                                        'Задайте имя чата: ')
-        while chat_name == "":
-            QMessageBox.warning(None, 'Warning', 'Не указано имя чата!')
-            chat_name, ok = QtWidgets.QInputDialog.getText(self, 'Создание чата',
-                                                           'Задайте имя чата: ')
         if ok:
+            while chat_name == "":
+                QMessageBox.warning(None, 'Warning', 'Не указано имя чата!')
+                chat_name, ok = QtWidgets.QInputDialog.getText(self, 'Создание чата',
+                                                               'Задайте имя чата: ')
             add_user = 'Y'
             while add_user == 'Y':
                 user_id, ok = QtWidgets.QInputDialog.getText(self, 'Create',
                                                              'Введите логин пользователя для добавления в чат: ')
-                while user_id == "":
-                    QMessageBox.warning(None, 'Warning', 'Не указан логин пользователя!')
-                    user_id, ok = QtWidgets.QInputDialog.getText(self, 'Create',
-                                                                 'Введите логин пользователя для добавления в чат: ')
                 if ok:
+                    while user_id == "":
+                        QMessageBox.warning(None, 'Warning', 'Не указан логин пользователя!')
+                        user_id, ok = QtWidgets.QInputDialog.getText(self, 'Create', 'Введите логин пользователя для '
+                                                                                     'добавления в чат: ')
+
                     users_id.append(user_id)
 
-                reply = QMessageBox.question(self, 'Create', 'Продолжить добавление пользователей?',
-                                             QMessageBox.Yes | QMessageBox.No,
-                                             QMessageBox.No)
+                    reply = QMessageBox.question(self, 'Create', 'Продолжить добавление пользователей?',
+                                                 QMessageBox.Yes | QMessageBox.No,
+                                                 QMessageBox.No)
 
-                add_user = 'Y' if reply == QMessageBox.Yes else 'N'
+                    add_user = 'Y' if reply == QMessageBox.Yes else 'N'
 
-            self.list_contacts.create_chat(chat_name, users_id, self.ui.session)
-            server_response_rcv = self.ui.sock.recv(4096)
-            print(server_response_rcv)
-            server_response = client.ClientHandler.message_decode(server_response_rcv)
-            self.create_message_box('{}\n{}'.format(server_response['result'], server_response['error']), 'Create')
+                    self.list_contacts.create_chat(chat_name, users_id, self.ui.session)
+                    server_response_rcv = self.ui.sock.recv(4096)
+                    print(server_response_rcv)
+                    server_response = client.ClientHandler.message_decode(server_response_rcv)
+                    self.create_message_box('{}\n{}'.format(server_response['result'], server_response['error']),
+                                            'Create')
+                else:
+                    return True
+        else:
+            # self.close()
+            return True

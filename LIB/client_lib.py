@@ -59,7 +59,7 @@ class ClientHandler:
     @staticmethod
     @log_console
     def start_for_client(sock, data):
-        """Отправка и получение presense/registr сообщений"""
+        """Отправка и получение presence/registr сообщений"""
         data_buf = message_encode(data)
         sock.send(data_buf)
         result_buf = sock.recv(1024)
@@ -170,11 +170,11 @@ class JIMMessage:
 
     @log_console
     def get_client_message(self):
-        """Создано сообщение presense для отправки на сервер"""
+        """Создано сообщение presence для отправки на сервер"""
         return self._client_message
 
 
-class PresenseMessage(JIMMessage):
+class presenceMessage(JIMMessage):
 
     def __init__(self, account_name, action, type, user_status, level, password):
         super().__init__(account_name, action, type)

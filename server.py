@@ -95,8 +95,8 @@ class Server(Thread, metaclass=Singleton):
                             self.handler.send_response_to_client(conn, result)
 
                     # Запрос на авторизацию (presence)
-                        if data['action'] == 'presense':
-                            result = self.handler.create_presense_response(data)
+                        if data['action'] == 'presence':
+                            result = self.handler.create_presence_response(data)
                             self.handler.send_response_to_client(conn, result)
                             if result['response'] == 400 or result['response'] == 402:
                                 print('Клиенту отказано в подключении: {}'.format(result))

@@ -20,9 +20,9 @@ session = sessionmaker(bind=engine)()
 
 
 class CTestLib(unittest.TestCase):
-    def test_presense_response(self):
+    def test_presence_response(self):
         data = {
-            'action': 'presense',
+            'action': 'presence',
             'time': time.time(),
             'type': 'status',
             'user': {
@@ -35,7 +35,7 @@ class CTestLib(unittest.TestCase):
         virt_sock = Mock()
         virt_sock.send.return_value = None
         virt_sock.recv.return_value = data
-        result = ServerHandler(session, engine).create_presense_response(data)
+        result = ServerHandler(session, engine).create_presence_response(data)
         self.assertDictEqual(result, {'response': 202, 'alert': 'Login is accepted'})
 
 

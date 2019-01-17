@@ -91,7 +91,7 @@ class ServerHandler:
     @staticmethod
     @log
     def check_server_response(result):
-        """ Проверка ответа сервера (action = 'presense')"""
+        """ Проверка ответа сервера (action = 'presence')"""
         if len(result) != 3:
             raise ResponseCodeError(result)
             logger.error('The lenth of the response code is not equal to 3')
@@ -139,7 +139,7 @@ class ServerHandler:
         return result
 
     @log
-    def create_presense_response(self, data):
+    def create_presence_response(self, data):
         """Обработка запроса на аутентфикацию клиента в системе"""
 
         result = JIMResponse(data, self.session, self.engine).server_response
@@ -218,9 +218,9 @@ class JIMResponse:
 
     @property
     def server_response(self):
-        """ Формирование ответа сервера (action='presense')"""
+        """ Формирование ответа сервера (action='presence')"""
         if not ('action' in self.data) or not ('time' in self.data) or not ('user' in self.data) \
-                or not ('account_name' in self.data['user']) or not (self.data['action'] == 'presense'):
+                or not ('account_name' in self.data['user']) or not (self.data['action'] == 'presence'):
             # logger.error('Client message is incorrect. Access is denied')
             self._server_response = {'response': 400, 'error': 'Wrong request/JSON-object'}
         else:
@@ -283,7 +283,12 @@ class ListContacts(JIMResponse):
         result = self.engine.execute("select guid from users where login = ?", login)
         owner = result.fetchall()[0][0]
         result = self.engine.execute("select guid from users where login = ?", nickname)
-        user_id = result.fetchall()[0][0]
+        result_id = result.fetchall()
+        if result_id:
+            user_id = result_id[0][0]
+        else:
+            resp_add_cl = {'response': 400, 'error': 'Пользователь {} не зарегистрирован!'.format(nickname)}
+            return resp_add_cl
         users_id = []
         result = self.engine.execute("select user_id from contacts_list where owner_id = ?", owner)
         # print(result.fetchall())
@@ -311,22 +316,27 @@ class ListContacts(JIMResponse):
     @ServerHandler.log
     def create_chat(self, login, session_kod, user_sessions, data):
         """Создание пользовательского чата. Вставка записи в табл. users_chat"""
-        self.session.add(CGroups(group_name=data['chat_name']))
-        self.session.commit()
+        result = self.engine.execute('select guid from groups where group_name=?', (data['chat_name']))
+        if not result.fetchall():
+            self.session.add(CGroups(group_name=data['chat_name']))
+            self.session.commit()
+        else:
+            response = {'result': 'Чат не создан', 'error': 'Имя {} занято!'.format(data['chat_name'])}
+            return response
         # Добавляем пользователей в чат
         # Проверка что есть в users и вставка
         users_add = []
         users_error = []
         data['users'].append(login)
-        result = self.engine.execute("select login from users")
+        result = self.engine.execute('select login from users')
         users_db = []
         for line in result.fetchall():
             users_db.append(line[0])
         for i in data['users']:
             if i in users_db:
-                result = self.engine.execute("select guid from users where login = ?", i)
+                result = self.engine.execute('select guid from users where login = ?', (i,))
                 user_id = result.fetchall()[0][0]
-                result = self.engine.execute("select guid from groups where group_name = ?", (data['chat_name']))
+                result = self.engine.execute('select guid from groups where group_name = ?', (data['chat_name'],))
                 group_id = result.fetchall()[0][0]
                 users_add.append(i)
                 self.session.add(CUsersChat(group_id=group_id, user_id=user_id))

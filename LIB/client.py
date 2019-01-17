@@ -82,7 +82,7 @@ class ClientHandler:
 
     @classmethod
     def start_for_client(cls, sock, data):
-        """Отправка и получение presense/registr сообщений"""
+        """Отправка и получение presence/registr сообщений"""
         # data_buf = (json.dumps(data)).encode('utf-8')
         data_buf = cls.message_encode(data)
         sock.send(data_buf)
@@ -110,11 +110,11 @@ class JIMMessage:
 
     @property
     def request_to_server(self):
-        """Создание presense-сообщения для отправки на сервер"""
+        """Создание presence-сообщения для отправки на сервер"""
         return self._client_message
 
 
-class PresenseMessage(JIMMessage):
+class presenceMessage(JIMMessage):
 
     def __init__(self, account_name, action, type, user_status, level, password):
         super().__init__(account_name, action, type)
@@ -183,7 +183,7 @@ class Client(metaclass=Singleton):
         # self.s = ssl.wrap_socket(self.s, ciphers="AES128-SHA")
         self.s.connect((addr, port))
 
-    # presense-сообщение
+    # presence-сообщение
     @ClientHandler.log
     def get_account_name(self, user_name):
         """Проверка логина"""
@@ -208,9 +208,9 @@ class Client(metaclass=Singleton):
         return server_response
 
     @ClientHandler.log
-    def get_presense_response(self, account_name, user_status, level, password):
+    def get_presence_response(self, account_name, user_status, level, password):
         """Получение ответа сервера по аутентификации в системе"""
-        data = PresenseMessage(account_name, 'presense', 'status', user_status, level, password).request_to_server
+        data = presenceMessage(account_name, 'presence', 'status', user_status, level, password).request_to_server
         server_response = ClientHandler.start_for_client(self.s, data)
         return server_response
 
@@ -339,7 +339,7 @@ if __name__ == '__main__':
     engine = create_engine('sqlite:///clients_messages.db')
     session = sessionmaker(bind=engine)()
 
-    # presense-сообщение и ответ сервера
+    # presence-сообщение и ответ сервера
     result = s.get_server_response()
     print('Ответ от сервера получен: {}'.format(result))
 

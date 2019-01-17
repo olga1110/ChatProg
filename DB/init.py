@@ -214,6 +214,7 @@ class CWith():
 # cursor.execute("delete from groups where group_name = 'test'")
 # conn.commit()
 #     print('Done')
-
-cursor.execute("select* from users")
-print(cursor.fetchall())
+nickname='Olga'
+result = cursor.execute("select guid from users where login = ?", (nickname,))
+# cursor.execute("select* from users")
+# print(cursor.fetchall())
