@@ -68,6 +68,9 @@ class Ui_Form(object):
         self.label_2 = QtWidgets.QLabel(Form)
         self.label_2.setGeometry(QtCore.QRect(200, 80, 191, 21))
         self.label_2.setObjectName("label_2")
+        self.list_contacts_combo = QtWidgets.QComboBox(Form)
+        self.list_contacts_combo.setGeometry(QtCore.QRect(200, 150, 151, 25))
+        self.list_contacts_combo.setObjectName("list_contacts_combo")
 
         self.retranslateUi(Form)
         QtCore.QMetaObject.connectSlotsByName(Form)

@@ -193,6 +193,16 @@
     <string>ОТПРАВИТЬ СООБЩЕНИЕ:</string>
    </property>
   </widget>
+  <widget class="QComboBox" name="list_contacts_combo">
+   <property name="geometry">
+    <rect>
+     <x>200</x>
+     <y>150</y>
+     <width>151</width>
+     <height>25</height>
+    </rect>
+   </property>
+  </widget>
  </widget>
  <resources/>
  <connections/>

@@ -33,9 +33,12 @@ class CManageForm(QtWidgets.QWidget):
                     result = func(self)
                     return result
                 else:
-                    QMessageBox.warning(None, 'Warning','Для выполнения данной операции необходим {}-й уровень доступа'.format(r_level))
+                    QMessageBox.warning(None, 'Warning',
+                                        'Для выполнения данной операции необходим {}-й уровень доступа'.format(r_level))
                     return
+
             return decorated2
+
         return decorator
 
     def create_message_box(self, text, title):
@@ -67,7 +70,7 @@ class CManageForm(QtWidgets.QWidget):
     def add_contacts(self):
         action = 'add_contact'
         nickname, ok = QtWidgets.QInputDialog.getText(self, 'Добавить контакт',
-                                                'Введите логин для добавления пользователя: ')
+                                                      'Введите логин для добавления пользователя: ')
 
         while nickname == "":
             QMessageBox.warning(None, 'Warning', 'Не указан логин пользователя!')
@@ -87,7 +90,7 @@ class CManageForm(QtWidgets.QWidget):
     def del_contacts(self):
         action = 'del_contact'
         nickname, ok = QtWidgets.QInputDialog.getText(self, 'Удалить контакт',
-                                                'Введите логин для удаления пользователя: ')
+                                                      'Введите логин для удаления пользователя: ')
         while nickname == "":
             QMessageBox.warning(None, 'Warning', 'Не указан логин пользователя!')
             nickname, ok = QtWidgets.QInputDialog.getText(self, 'Удалить контакт',
@@ -107,7 +110,7 @@ class CManageForm(QtWidgets.QWidget):
         users_id = []
 
         chat_name, ok = QtWidgets.QInputDialog.getText(self, 'Create',
-                                                      'Задайте имя чата: ')
+                                                       'Задайте имя чата: ')
         while chat_name == "":
             QMessageBox.warning(None, 'Warning', 'Не указано имя чата!')
             chat_name, ok = QtWidgets.QInputDialog.getText(self, 'Создание чата',
@@ -116,7 +119,7 @@ class CManageForm(QtWidgets.QWidget):
             add_user = 'Y'
             while add_user == 'Y':
                 user_id, ok = QtWidgets.QInputDialog.getText(self, 'Create',
-                                                               'Введите логин пользователя для добавления в чат: ')
+                                                             'Введите логин пользователя для добавления в чат: ')
                 while user_id == "":
                     QMessageBox.warning(None, 'Warning', 'Не указан логин пользователя!')
                     user_id, ok = QtWidgets.QInputDialog.getText(self, 'Create',
@@ -125,11 +128,10 @@ class CManageForm(QtWidgets.QWidget):
                     users_id.append(user_id)
 
                 reply = QMessageBox.question(self, 'Create', 'Продолжить добавление пользователей?',
-                                     QMessageBox.Yes | QMessageBox.No,
-                                     QMessageBox.No)
+                                             QMessageBox.Yes | QMessageBox.No,
+                                             QMessageBox.No)
 
                 add_user = 'Y' if reply == QMessageBox.Yes else 'N'
-
 
             self.list_contacts.create_chat(chat_name, users_id, self.ui.session)
             server_response_rcv = self.ui.sock.recv(4096)

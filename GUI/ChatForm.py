@@ -1,6 +1,6 @@
 import sys
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import QApplication, QWidget, QMessageBox
+from PyQt5.QtWidgets import QApplication, QWidget, QMessageBox, QLabel, QComboBox
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from GUI.chat_ui import Ui_Form as ui_chat
@@ -9,16 +9,17 @@ from LIB.client import Client, Chat, ListContacts
 
 class ReadThread(QThread):
     in_msg = pyqtSignal(str)
+
     def __init__(self, sock):
         super().__init__()
         self.sock = sock
         self.chat_client = Chat(sock)
         self.running = False
+
     def run(self):
         self.running = True
         while self.running:
             msg = self.chat_client.read_client_message()
-            print(msg)
             if msg:
                 self.in_msg.emit(msg)
 
@@ -46,23 +47,24 @@ class WriteThread(QThread):
         self.out_msg.emit(self.msg)
 
 
-class ComboBox(QtWidgets.QComboBox):
-    popupAboutToBeShown = QtCore.pyqtSignal()
-
-    def showPopup(self):
-        self.popupAboutToBeShown.emit()
-        super(ComboBox, self).showPopup()
+# class ComboBox(QtWidgets.QComboBox):
+#     popupAboutToBeShown = QtCore.pyqtSignal()
+#
+#     def showPopup(self):
+#         self.popupAboutToBeShown.emit()
+#         super(ComboBox, self).showPopup()
 
 
 class CChatForm(QtWidgets.QWidget):
     incomeMessage = QtCore.pyqtSignal(str)
 
-    def __init__(self, sock, account_name, level, session, parent=None):
+    def __init__(self, sock, account_name, level, session, contacts, parent=None):
         super().__init__(parent)
         self.ui = ui_chat()
         self.sock = sock
         self.ui.level = level
         self.ui.session = session
+        self.contacts = contacts
         # timer = QtCore.QTimer(self)
         # timer.start(3000)
         # timer.timeout.connect(self.read_message)
@@ -72,12 +74,13 @@ class CChatForm(QtWidgets.QWidget):
         self.ui.send_button.clicked.connect(self.write_message)
         self.ui.exit_button.clicked.connect(self.close)
         self.ui.Private_RB.setChecked(True)
-        self.list_contacts = ListContacts(sock)
-        # self.ui.list_contacts_comboBox.activated[str].connect(self.load_contacts)
-        self.combo = ComboBox(self)
-        self.combo.addItem('Выберите контакт')
-        self.combo.popupAboutToBeShown.connect(self.populateConbo)
-        #self.chat_client = Chat(sock)
+        self.to_contact = None
+        # self.list_contacts_combo = QComboBox(self)
+        self.ui.list_contacts_combo.addItem('Выберите контакт')
+        self.ui.list_contacts_combo.addItems(self.contacts)
+        self.ui.list_contacts_combo.adjustSize()
+        # self.list_contacts_combo.popupAboutToBeShown.connect(self.populateConbo)
+        self.ui.list_contacts_combo.activated[str].connect(self.onActivated)
 
         self.thread = ReadThread(self.sock)
         self.thread.in_msg.connect(self.on_ReadThreadSignal)
@@ -91,36 +94,38 @@ class CChatForm(QtWidgets.QWidget):
                     result = func(self, *args)
                     return result
                 else:
-                    QMessageBox.warning(None, 'Warning', 'Для выполнения данной операции необходим {}-й уровень доступа'.format(r_level))
+                    QMessageBox.warning(None, 'Warning', 'Для выполнения данной операции необходим {}-й уровень доступа'
+                                        .format(r_level))
                     return
             return decorated2
         return decorator
 
-    # @login_required(3)
-    # def read_message(self):
-    #     msg = self.chat_client.read_client_message()
-    #     print(msg)
-    #     if msg:
-    #         self.ui.chat_textBrowser.append(msg)
-
-    def hide_contacts(self):
-        self.combo.hide()
+    # ДОДЕЛАТЬ
+    # def hide_contacts(self):
+    #     self.ui.list_contacts_combo.hide()
 
     @login_required(3)
     def write_message(self, sock):
         msg = self.ui.send_mes.toPlainText()
-
         if msg == "":
             QMessageBox.warning(None, 'Warning', 'Нельзя отправить пустое сообщение. Введите текст')
             return True
-        reply = QMessageBox.question(self, 'System_question', 'Отправить сообщение в общий чат?', QMessageBox.Yes | QMessageBox.No,
-                                     QMessageBox.No)
-        if reply == QMessageBox.Yes:
+
+        # reply = QMessageBox.question(self, 'System_question', 'Отправить сообщение в общий чат?',
+        # QMessageBox.Yes | QMessageBox.No,
+        #                              QMessageBox.No)
+        # if reply == QMessageBox.Yes:
+        if self.ui.Chat_RB.isChecked() == True:
             type_msg = 'chat'
             to = 'chat'
         else:
             type_msg = 'personal'
-            to, _ = QtWidgets.QInputDialog.getText(self, 'System_question', 'Кому доставить сообщение? Введите логин: ')
+            # to, _ = QtWidgets.QInputDialog.getText(self, 'System_question', 'Кому доставить сообщение? Введите логин: ')
+            # to = self.onActivated
+            if self.to_contact in ('Выберите контакт', '<Пусто>'):
+                QMessageBox.warning(None, 'Warning', 'Получатель не выбран!')
+                return True
+            to = self.to_contact
 
         self.thread1 = WriteThread(self.sock, msg, type_msg, to, self.ui.account_name, self.ui.session)
 
@@ -138,27 +143,26 @@ class CChatForm(QtWidgets.QWidget):
     #     self.thread.running = False
     #     self.close()
 
+    # def get_contacts(self):
+    #     self.list_contacts.client_get_contacts(self.ui.session)
+    #     count = self.list_contacts.read_server_response_contacts()
+    #     contacts = []
+    #     print(count)
+    #     for _ in range(count):
+    #         server_response = self.list_contacts.read_server_response_contacts()
+    #         contacts.append(server_response['user_id'])
+    #     if contacts:
+    #         return contacts
+    #     return ['<Пусто>']
 
-    def get_contacts(self):
-        self.list_contacts.client_get_contacts(self.ui.session)
-        count = self.list_contacts.read_server_response_contacts()
-        list = []
-        for _ in range(count):
-            server_response = self.list_contacts.read_server_response_contacts()
-            list.append(server_response['user_id'])
-        if list:
-            return list
-        else:
-            return ['<Пусто>']
+    def onActivated(self, text):
+        self.to_contact = text
+        return self.to_contact
     #
-    # def load_contacts(self):
-    #     self.ui.list_contacts_comboBox.addItems(self.get_contacts)
-
-    def populateConbo(self):
-        print(self.combo.count())
-        if self.combo.count() == 1:
-            list_contacts = self.get_contacts()
-            self.combo.addItems(list_contacts)
+    # def populateConbo(self):
+    #     if self.list_contacts_combo.count() == 1:
+    #         list_contacts = self.get_contacts()
+    #         self.list_contacts_combo.addItems(list_contacts)
 
     def closeEvent(self, event):
         reply = QMessageBox.question(self, 'Message',

@@ -171,7 +171,6 @@ class HandleThread(Thread):
                         for c in self.serv_sock.msg_queues:  # Обходим все очереди сообщений
                             if c != self.sock:  # Кроме очереди текущего сокета
                                 self.serv_sock.msg_queues[c].put(msg_buf)
-                        print(self.serv_sock.msg_queues)
                     elif msg['type'] == 'personal':
                         login_to = msg['to']
                         self.serv_sock.msg_queues[self.serv_sock.users[login_to]].put(msg_buf)

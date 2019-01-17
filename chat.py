@@ -142,9 +142,23 @@ class CGeneralForm(QtWidgets.QWidget):
         self.ui.account_name = account_name
         self.ui.level = level
         self.ui.session = session
+        self.list_contacts = ListContacts(sock)
+        self.contacts = []
+
+    def get_contacts(self):
+        self.list_contacts.client_get_contacts(self.ui.session)
+        count = self.list_contacts.read_server_response_contacts()
+        for _ in range(count):
+            server_response = self.list_contacts.read_server_response_contacts()
+            self.contacts.append(server_response['user_id'])
+        if self.contacts:
+            return self.contacts
+        return ['<Пусто>']
 
     def on_chat_button_pressed(self):
-        self.ui.chat_form = CChatForm(self.ui.sock, self.ui.account_name, self.ui.level, self.ui.session)
+        self.contacts = self.get_contacts()
+        self.ui.chat_form = CChatForm(self.ui.sock, self.ui.account_name, self.ui.level, self.ui.session,
+                                      self.contacts)
         self.ui.chat_form.show()
 
     def on_contacts_button_pressed(self):

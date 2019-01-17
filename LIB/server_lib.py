@@ -267,8 +267,9 @@ class ListContacts(JIMResponse):
         if self._server_response['response'] == 202:
             contact_response = {"action": "contact_list"}
             result = self.engine.execute(
-                "select login from contacts_list as cl inner join users as u on cl.user_id = u.guid where owner_id = (select guid from users where login = ?)",
-                (login))
+                "select login from contacts_list as cl inner join users as u on cl.user_id = u.guid where owner_id ="
+                " (select guid from users where login = ?)",
+                (login,))
             for line in result.fetchall():
                 contact_response['user_id'] = line[0]
                 ServerHandler.send_response_to_client(sock, contact_response)
