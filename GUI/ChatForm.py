@@ -74,6 +74,7 @@ class CChatForm(QtWidgets.QWidget):
         self.ui.send_button.clicked.connect(self.write_message)
         self.ui.exit_button.clicked.connect(self.close)
         self.ui.Private_RB.setChecked(True)
+        self.ui.Chat_RB.toggled.connect(self.hide_contacts)
         self.to_contact = None
         # self.list_contacts_combo = QComboBox(self)
         self.ui.list_contacts_combo.addItem('Выберите контакт')
@@ -100,9 +101,12 @@ class CChatForm(QtWidgets.QWidget):
             return decorated2
         return decorator
 
-    # ДОДЕЛАТЬ
-    # def hide_contacts(self):
-    #     self.ui.list_contacts_combo.hide()
+    def hide_contacts(self):
+        if self.ui.Chat_RB.isChecked():
+            self.ui.list_contacts_combo.hide()
+        else:
+            self.ui.list_contacts_combo.show()
+
 
     @login_required(3)
     def write_message(self, sock):
