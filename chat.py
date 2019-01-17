@@ -1,6 +1,6 @@
 import sys
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import QApplication, QWidget, QMessageBox
+from PyQt5.QtWidgets import QApplication, QWidget, QMessageBox, QLineEdit
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from sqlalchemy import Column, Integer, Unicode, UniqueConstraint, ForeignKey, create_engine
@@ -47,8 +47,10 @@ class CMainWindow(QtWidgets.QMainWindow):
         self.ui.registr_button.clicked.connect(self.make_registr)
         self.ui.checkBox_registr.stateChanged.connect(self.show_registr)
         self.ui.online_RB.setChecked(True)
-        self.ui.password_text_1.hide()
-        self.ui.pass1_label.hide()
+        self.ui.password.setEchoMode(QLineEdit.Password)
+        self.ui.password_confirm.setEchoMode(QLineEdit.Password)
+        self.ui.password_confirm.hide()
+        self.ui.pass_confirm_label.hide()
         self.ui.level_combobox.addItems(['1', '2', '3'])
         self.s = Client(addr, port)
 
@@ -73,18 +75,18 @@ class CMainWindow(QtWidgets.QMainWindow):
 
     def show_registr(self, state):
         if state == Qt.Checked:
-            self.ui.password_text_1.show()
-            self.ui.pass1_label.show()
+            self.ui.password_confirm.show()
+            self.ui.pass_confirm_label.show()
         else:
-            self.ui.password_text_1.hide()
-            self.ui.pass1_label.hide()
+            self.ui.password_confirm.hide()
+            self.ui.pass_confirm_label.hide()
 
     def make_registr(self):
         if self.ui.checkBox_registr.isChecked():
             login = self.ui.login_text.toPlainText()
             level = self.ui.level_combobox.currentText()
-            password = self.ui.password_text.toPlainText()
-            password1 = self.ui.password_text_1.toPlainText()
+            password = self.ui.password.text()
+            password1 = self.ui.password_confirm.text()
             result = self.s.get_register_response(login, level, password, password1)
             if result['response'] != 200:
                 QMessageBox.warning(None, 'Warning', result['info'])
@@ -92,14 +94,14 @@ class CMainWindow(QtWidgets.QMainWindow):
             else:
                 self.create_message_box(result['info'], 'Регистрация')
                 self.ui.checkBox_registr.setChecked(False)
-                self.ui.password_text.clear()
+                self.ui.password.clear()
 
     def get_login_input(self):
 
         s = Client(addr, port)
         user_name = self.ui.login_text.toPlainText()
         level = self.ui.level_combobox.currentText()
-        password = self.ui.password_text.toPlainText()
+        password = self.ui.password.text()
         if user_name == "":
             QMessageBox.warning(None, 'Warning', 'Не указан логин')
             return
