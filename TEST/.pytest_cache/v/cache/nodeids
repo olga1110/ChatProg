@@ -1,7 +1,0 @@
-[
-  "fix_pytest.py::test_get_server_response[param_test0]",
-  "fix_pytest.py::test_get_server_response[param_test1]",
-  "fix_pytest.py::test_get_server_response[param_test2]",
-  "fix_pytest.py::test_get_server_response[param_test3]",
-  "fix_pytest.py::test_get_server_response[param_test4]"
-]
