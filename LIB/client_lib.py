@@ -1,24 +1,17 @@
-# Реализовать декоратор @log, фиксирующий обращение к декорируемой функции: сохраняет имя функции и её аргументы.
-
 import sys
 import json
 import time
-# import logging
-# from log_config import log_client_init
+
 from functools import wraps
+
 sys.path.append("..")
 from log_config import create_client_log
 
-
 logger = create_client_log('client_log.log')
 # log_client = logging.getLogger("client_messanger_log")
-# log_client = None
 
 
 def log_console(func):
-    # global log_client
-    # if log_client is None:
-    # log_client = log_client_init()
     @wraps(func)
     def wrap(*args, **kwargs):
         result = func(*args, **kwargs)
@@ -29,16 +22,17 @@ def log_console(func):
 
     return wrap
 
+
 @log_console
 def message_encode(ex_data):
     """Кодирование выполнено. Сообщение готово к отправке"""
     return (json.dumps(ex_data)).encode('utf-8')
 
+
 @log_console
 def message_decode(im_data):
     """Расшифровка сообщения выполнена"""
     return json.loads(im_data.decode('utf-8'))
-
 
 
 class ClientHandler:
@@ -52,8 +46,9 @@ class ClientHandler:
             result = func(*args, **kwargs)
             # log_client.debug(func.__doc__)
             if __debug__:
-                print('вызов функции {} с аргументами: {}, {} выполнен'. format(func.__name__, args, kwargs))
+                print('вызов функции {} с аргументами: {}, {} выполнен'.format(func.__name__, args, kwargs))
             return result
+
         return wrap
 
     @staticmethod
@@ -220,6 +215,7 @@ class ChatMessage(JIMMessage):
         self._client_message['message'] = self.msg
         self._client_message['session'] = self.session
 
+
 class PrivateMessage(JIMMessage):
 
     def __init__(self, account_name, action, type, to, msg, session):
@@ -232,23 +228,3 @@ class PrivateMessage(JIMMessage):
         self._client_message['from'] = self.account_name
         self._client_message['message'] = self.msg
         self._client_message['session'] = self.session
-
-
-# {'action': 'msg', 'time': 1531313146.1733363, 'type': 'chat', 'to': '#chat', 'from': 'user_7', 'message': 'Hello'}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -12,7 +12,6 @@ sys.path.append(os.path.dirname(__file__) + '/../')
 from LIB.server_lib import ServerHandler
 import DB.DB_classes as DB
 
-
 path = os.path.dirname(DB.__file__)
 path_db = os.path.join(path, 'messages.db')
 engine = create_engine('sqlite:///' + path_db)
@@ -41,6 +40,3 @@ class CTestLib(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-
-
-

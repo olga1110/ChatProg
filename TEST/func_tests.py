@@ -13,11 +13,12 @@ class TestLib(unittest.TestCase):
     def test_message_encode(self):
         my_dict = {"login": "Olga", "password": "ab12c5vh4"}
         self.assertIn(server_lib.ServerHandler.message_encode(my_dict), (b'{"login": "Olga", "password": "ab12c5vh4"}',
-                                                           b'{"password": "ab12c5vh4", "login": "Olga"}'))
+                                                                         b'{"password": "ab12c5vh4", "login": "Olga"}'))
 
     def test_message_decode(self):
         my_bytes = b'{"login": "Olga", "password": "ab12c5vh4"}'
-        self.assertDictEqual(server_lib.ServerHandler.message_decode(my_bytes), {"login": "Olga", "password": "ab12c5vh4"})
+        self.assertDictEqual(server_lib.ServerHandler.message_decode(my_bytes),
+                             {"login": "Olga", "password": "ab12c5vh4"})
 
     def test_check_account_name(self):
         account_name = 'asdfghjklasdfghjklasdfghjkl'
@@ -32,6 +33,3 @@ class TestLib(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-
-
-

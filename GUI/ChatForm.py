@@ -2,7 +2,7 @@ import sys
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QApplication, QWidget, QMessageBox, QLabel, QComboBox
 from PyQt5.QtCore import *
-from PyQt5.QtGui import *
+# from PyQt5.QtGui import *
 from GUI.chat_ui import Ui_Form as ui_chat
 from LIB.client import Client, Chat, ListContacts
 
@@ -76,7 +76,6 @@ class CChatForm(QtWidgets.QWidget):
         self.ui.Private_RB.setChecked(True)
         self.ui.Chat_RB.toggled.connect(self.hide_contacts)
         self.to_contact = None
-        # self.list_contacts_combo = QComboBox(self)
         self.ui.list_contacts_combo.addItem('Выберите контакт')
         self.ui.list_contacts_combo.addItems(self.contacts)
         self.ui.list_contacts_combo.adjustSize()
@@ -107,7 +106,6 @@ class CChatForm(QtWidgets.QWidget):
         else:
             self.ui.list_contacts_combo.show()
 
-
     @login_required(3)
     def write_message(self, sock):
         msg = self.ui.send_mes.toPlainText()
@@ -115,17 +113,11 @@ class CChatForm(QtWidgets.QWidget):
             QMessageBox.warning(None, 'Warning', 'Нельзя отправить пустое сообщение. Введите текст')
             return True
 
-        # reply = QMessageBox.question(self, 'System_question', 'Отправить сообщение в общий чат?',
-        # QMessageBox.Yes | QMessageBox.No,
-        #                              QMessageBox.No)
-        # if reply == QMessageBox.Yes:
-        if self.ui.Chat_RB.isChecked() == True:
+        if self.ui.Chat_RB.isChecked():
             type_msg = 'chat'
             to = 'chat'
         else:
             type_msg = 'personal'
-            # to, _ = QtWidgets.QInputDialog.getText(self, 'System_question', 'Кому доставить сообщение? Введите логин: ')
-            # to = self.onActivated
             if self.to_contact in ('Выберите контакт', '<Пусто>'):
                 QMessageBox.warning(None, 'Warning', 'Получатель не выбран!')
                 return True
@@ -143,26 +135,10 @@ class CChatForm(QtWidgets.QWidget):
     def on_ReadThreadSignal(self, value):
         self.ui.chat_textBrowser.append(value)
 
-    # def close(self):
-    #     self.thread.running = False
-    #     self.close()
-
-    # def get_contacts(self):
-    #     self.list_contacts.client_get_contacts(self.ui.session)
-    #     count = self.list_contacts.read_server_response_contacts()
-    #     contacts = []
-    #     print(count)
-    #     for _ in range(count):
-    #         server_response = self.list_contacts.read_server_response_contacts()
-    #         contacts.append(server_response['user_id'])
-    #     if contacts:
-    #         return contacts
-    #     return ['<Пусто>']
-
     def onActivated(self, text):
         self.to_contact = text
         return self.to_contact
-    #
+
     # def populateConbo(self):
     #     if self.list_contacts_combo.count() == 1:
     #         list_contacts = self.get_contacts()

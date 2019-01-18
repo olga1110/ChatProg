@@ -1,8 +1,8 @@
 import sys
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QApplication, QWidget, QMessageBox
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
+# from PyQt5.QtCore import *
+# from PyQt5.QtGui import *
 from GUI.manage_contacts_ui import Ui_Form as manage_form
 import LIB.client as client
 
@@ -71,13 +71,11 @@ class CManageForm(QtWidgets.QWidget):
         action = 'add_contact'
         nickname, ok = QtWidgets.QInputDialog.getText(self, 'Добавить контакт',
                                                       'Введите логин для добавления пользователя: ')
-
-        while nickname == "":
-            QMessageBox.warning(None, 'Warning', 'Не указан логин пользователя!')
-            nickname, ok = QtWidgets.QInputDialog.getText(self, 'Добавить контакт',
-                                                          'Введите логин для добавления пользователя: ')
-
         if ok:
+            while nickname == "":
+                QMessageBox.warning(None, 'Warning', 'Не указан логин пользователя!')
+                nickname, ok = QtWidgets.QInputDialog.getText(self, 'Добавить контакт',
+                                                              'Введите логин для добавления пользователя: ')
             self.list_contacts.get_request_modify(action, nickname, self.ui.session)
             server_response_rcv = self.ui.sock.recv(4096)
             server_response = client.ClientHandler.message_decode(server_response_rcv)
@@ -85,18 +83,20 @@ class CManageForm(QtWidgets.QWidget):
                 self.create_message_box('Операция выполнена успешно', 'Добавить контакт')
             else:
                 self.create_message_box(server_response['error'], 'Добавить контакт')
+        else:
+            return True
 
     @login_required(1)
     def del_contacts(self):
         action = 'del_contact'
         nickname, ok = QtWidgets.QInputDialog.getText(self, 'Удалить контакт',
                                                       'Введите логин для удаления пользователя: ')
-        while nickname == "":
-            QMessageBox.warning(None, 'Warning', 'Не указан логин пользователя!')
-            nickname, ok = QtWidgets.QInputDialog.getText(self, 'Удалить контакт',
-                                                          'Введите логин для удаления пользователя: ')
-
         if ok:
+            while nickname == "":
+                QMessageBox.warning(None, 'Warning', 'Не указан логин пользователя!')
+                nickname, ok = QtWidgets.QInputDialog.getText(self, 'Удалить контакт',
+                                                              'Введите логин для удаления пользователя: ')
+
             self.list_contacts.get_request_modify(action, nickname, self.ui.session)
             server_response_rcv = self.ui.sock.recv(4096)
             server_response = client.ClientHandler.message_decode(server_response_rcv)
@@ -104,6 +104,9 @@ class CManageForm(QtWidgets.QWidget):
                 self.create_message_box('Операция выполнена успешно', 'Удалить контакт')
             else:
                 self.create_message_box(server_response['error'], 'Удалить контакт')
+        else:
+            return True
+
 
     @login_required(2)
     def create_chat(self):
@@ -136,7 +139,6 @@ class CManageForm(QtWidgets.QWidget):
 
                     self.list_contacts.create_chat(chat_name, users_id, self.ui.session)
                     server_response_rcv = self.ui.sock.recv(4096)
-                    print(server_response_rcv)
                     server_response = client.ClientHandler.message_decode(server_response_rcv)
                     self.create_message_box('{}\n{}'.format(server_response['result'], server_response['error']),
                                             'Create')

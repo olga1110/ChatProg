@@ -21,6 +21,10 @@ from LIB.server_lib import *
 from DB.DB_classes import *
 
 
+from log_config import create_server_log
+
+logger = create_server_log('server_log.log')
+
 parser = argparse.ArgumentParser(add_help=False)
 parser.add_argument('--host', help='server address', nargs='?', const='')
 parser.add_argument('--port', nargs='?', const=7777, type=int)
@@ -173,8 +177,11 @@ class HandleThread(Thread):
                                 self.serv_sock.msg_queues[c].put(msg_buf)
                     elif msg['type'] == 'personal':
                         login_to = msg['to']
-                        self.serv_sock.msg_queues[self.serv_sock.users[login_to]].put(msg_buf)
-                        self.serv_sock._db.insert_messages(login, msg['session'], self.serv_sock.sessions, msg)
+                        if self.serv_sock.users.get('login_to'):
+                            self.serv_sock.msg_queues[self.serv_sock.users[login_to]].put(msg_buf)
+                            self.serv_sock._db.insert_messages(login, msg['session'], self.serv_sock.sessions, msg)
+                        else:
+                            logger.debug(f'Пользователь {login_to} не подключен к сети. Сообщение не доставлено')
 
                 elif msg['action'] == 'get_key':
                     pub_key = self.serv_sock.keys[msg['user_login']]

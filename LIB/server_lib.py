@@ -99,9 +99,10 @@ class ServerHandler:
     # @log
     # def sys_info(result, response_code):
     #     if response_code == 202:
-    #         logger.info('Пользователь {} подключился к сети в {} со статусом {}'.format(result['user']['account_name'], result['time'], result['user']['status']))
+    #         logger.info('Пользователь {} подключился к сети в {} со статусом {}'.
+    #                     format(result['user']['account_name'], result['time'], result['user']['status']))
     #     # else:
-    #         logger.info('Пользователю отказано в доступе')
+    #     #     logger.info('Пользователю отказано в доступе')
 
     @staticmethod
     @log
@@ -115,7 +116,6 @@ class ServerHandler:
     @log
     def create_registr_response(self, data):
         """Обработка запроса на регистрацию нового клиента в системе"""
-        # pattern_password = '([\d+\w\])([!@#$%^&*]){8,}'
         pattern_password = re.compile(r'([\d+\w\])([!@#$%^&*]){8,}')
         if re.search(pattern_password, data['password']) is None:
             result = {'response': 402,
@@ -141,7 +141,6 @@ class ServerHandler:
     @log
     def create_presence_response(self, data):
         """Обработка запроса на аутентфикацию клиента в системе"""
-
         result = JIMResponse(data, self.session, self.engine).server_response
         return result
 
@@ -174,7 +173,6 @@ class ServerDB:
         # Проверка и обновление списка контактов пользователей
         users_id = []
         result = self.engine.execute("select user_id from contacts_list where owner_id = ?", guid_from)
-        # print(result.fetchall())
         for line in result.fetchall():
             users_id.append(line[0])
         if guid_to not in users_id:
@@ -182,8 +180,6 @@ class ServerDB:
             self.session.commit()
             self.session.add(CContactsList(owner_id=guid_to, user_id=guid_from))
             self.session.commit()
-
-    # {'action': 'msg', 'time': 1531313146.1733363, 'type': 'chat', 'to': '#chat', 'from': 'user_7', 'message': 'Hello'}
 
     @ServerHandler.login_required
     @ServerHandler.log
@@ -201,7 +197,6 @@ class ServerDB:
         h = ServerHandler.generate(data['password'])
         self.session.add(CPassword(h=h))
         self.session.commit()
-        # pid = cursor.lastrowid
         result = self.engine.execute('select max(guid) from password')
         pid = result.fetchall()[0][0]
         self.session.add(CUsers(login=data['account_name'], level=int(data['level']), password=pid))
@@ -255,14 +250,14 @@ class ListContacts(JIMResponse):
         """Обработка запроса на вывод списка контактов клиента"""
 
         result = self.engine.execute(
-            "select count(user_id) from contacts_list where owner_id = (select guid from users where login = ?)", login)
+            "select count(user_id) from contacts_list where owner_id = (select guid from users where login = ?)",
+            (login,))
         count = result.fetchall()[0][0]
 
         if self.data:
             self._server_response = {"response": 202, "quantity": count}
         else:
             self._server_response = {"response": 400, 'alert': 'Request is incorrect'}
-        print('Ответ по запросу пользователя на получение списка контактов: {}'.format(self._server_response))
         ServerHandler.send_response_to_client(sock, self._server_response)
         if self._server_response['response'] == 202:
             contact_response = {"action": "contact_list"}
@@ -291,7 +286,6 @@ class ListContacts(JIMResponse):
             return resp_add_cl
         users_id = []
         result = self.engine.execute("select user_id from contacts_list where owner_id = ?", owner)
-        # print(result.fetchall())
         for line in result.fetchall():
             users_id.append(line[0])
         if action == 'add_contact':
@@ -301,16 +295,12 @@ class ListContacts(JIMResponse):
                 resp_add_cl = {'response': 202, 'error': None}
             else:
                 resp_add_cl = {'response': 400, 'error': 'Пользователь {} уже есть в ваших контактах!'.format(nickname)}
-            # resp_add_cl_snd = ServerHandler.message_encode(resp_add_cl)
-            # sock.send(resp_add_cl_snd)
         if action == 'del_contact':
             if user_id in users_id:
                 self.engine.execute("delete from contacts_list where owner_id = ? and user_id = ?", (owner, user_id))
                 resp_add_cl = {'response': 202, 'error': None}
             else:
                 resp_add_cl = {'response': 400, 'error': 'Пользователя {} нет в ваших контактах!'.format(nickname)}
-            # resp_add_cl_snd = ServerHandler.message_encode(resp_add_cl)
-            # sock.send(resp_add_cl_snd)
         return resp_add_cl
 
     @ServerHandler.log
@@ -324,7 +314,6 @@ class ListContacts(JIMResponse):
             response = {'result': 'Чат не создан', 'error': 'Имя {} занято!'.format(data['chat_name'])}
             return response
         # Добавляем пользователей в чат
-        # Проверка что есть в users и вставка
         users_add = []
         users_error = []
         data['users'].append(login)

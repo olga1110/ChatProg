@@ -2,20 +2,16 @@ from socket import *
 import sys
 import time
 import json
-from sqlalchemy import Column, Integer, Unicode, UniqueConstraint, ForeignKey, create_engine
-from sqlalchemy.orm import sessionmaker, relationship
-from sqlalchemy.ext.declarative import declarative_base
 from Crypto.PublicKey import RSA
 import ssl
 from functools import wraps
-# import LIB.client_lib as client_lib
+
 from DB.DB_classes import *
 from log_config import create_client_log
 
 logger = create_client_log('client_log.log')
 
 
-# ---------Метообъекты-----------------------------------------------
 class Singleton(type):
 
     def __init__(self, *args, **kwargs):
@@ -37,9 +33,9 @@ class CDesc:
 
     def __set__(self, instance, value):
         if len(value) > 25:
-            print('Логин должен быть не более 25 символов')
+            logger.debug('Логин должен быть не более 25 символов')
         elif len(value) < 4:
-            print('Логин должен быть не менее 4 символов')
+            logger.debug('Логин должен быть не менее 4 символов')
         instance.__dict__[self.__name] = value
 
     def __get__(self, instance, cls):
@@ -53,8 +49,6 @@ class CCls:
     account_name = CDesc('account_name')
 
 
-# ---------Метообъекты-----------------------------------------------
-
 # Общие методы-----------------------------------------------
 class ClientHandler:
 
@@ -64,8 +58,6 @@ class ClientHandler:
             result = func(*args, **kwargs)
             msg = 'вызов функции {} с аргументами: {}, {} выполнен'.format(func.__name__, args, kwargs)
             logger.debug(func.__doc__ + '\n' + msg)
-            # if __debug__:
-            #     print('вызов функции {} с аргументами: {}, {} выполнен'. format(func.__name__, args, kwargs))
             return result
 
         return wrap
@@ -83,7 +75,6 @@ class ClientHandler:
     @classmethod
     def start_for_client(cls, sock, data):
         """Отправка и получение presence/registr сообщений"""
-        # data_buf = (json.dumps(data)).encode('utf-8')
         data_buf = cls.message_encode(data)
         sock.send(data_buf)
         result_buf = sock.recv(1024)
@@ -187,16 +178,12 @@ class Client(metaclass=Singleton):
     @ClientHandler.log
     def get_account_name(self, user_name):
         """Проверка логина"""
-        #     user_name = input('Введите ваш логин: ')
-        #     while user_name == '':
-        #         user_name = input('Введите ваш логин: ')
-        account_name = CCls().account_name
+        # account_name = CCls().account_name
         account_name = user_name
         return account_name
 
     def get_user_status(self):
         """Проверка статуса"""
-        # user_status = input('Ваш статус - online? (Y/N)')
         user_status = 'Y'
         return user_status
 
@@ -227,7 +214,6 @@ class Chat:
         input_message = ClientHandler.message_decode(msg_from_server)
         if input_message:
             return '{}: {}'.format(input_message['from'], input_message['message'])
-        # return ''
 
     @ClientHandler.log
     def client_write_chat(self, msg, account_name, session):
@@ -245,7 +231,6 @@ class Chat:
         self.s.send(msg_to_server)
         return personal_msg
 
-    # def get_client_key(self, to, msg):
     # def get_client_key(self, to):
     #     request_key = {'action': 'get_key', 'user_login': to}
     #     print(request_key)
@@ -266,10 +251,8 @@ class ListContacts:
     def client_get_contacts(self, session):
         """Отправка запроса на получение списка контактов"""
         request = {'action': 'get_contacts', 'session': session, 'time': time.time()}
-        print(request)
         request_snd = ClientHandler.message_encode(request)
         self.s.send(request_snd)
-        print(request)
         return request
 
     @ClientHandler.log
@@ -329,9 +312,6 @@ if __name__ == '__main__':
         mode_to_form = 'Чтение'
 
     s = Client(addr, port)
-
-    # account_name = s.get_account_name(user_name)
-    # account_name = user_name
 
     user_status = s.get_user_status()
 
