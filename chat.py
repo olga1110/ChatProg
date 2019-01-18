@@ -3,9 +3,6 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QApplication, QWidget, QMessageBox, QLineEdit
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
-from sqlalchemy import Column, Integer, Unicode, UniqueConstraint, ForeignKey, create_engine
-from sqlalchemy.orm import sessionmaker, relationship
-from sqlalchemy.ext.declarative import declarative_base
 from Crypto.PublicKey import RSA
 from GUI.messenger_ui import Ui_MainWindow as ui_class
 from GUI.ChatForm import CChatForm
@@ -13,7 +10,6 @@ from GUI.General_form_ui import Ui_General_Form as ui_form
 from GUI.ManageForm import CManageForm
 from LIB.client import Client, Chat, ListContacts
 from DB.DB_classes import *
-
 
 # Параметры подключения клиента
 try:
@@ -28,11 +24,6 @@ except IndexError:
 except ValueError:
     print('Задайте целочисленное значение для порта')
     sys.exit(0)
-
-
-# Подключение к базе данных
-# engine = create_engine('sqlite:///clients_messages.db')
-# session = sessionmaker(bind=engine)()
 
 
 class CMainWindow(QtWidgets.QMainWindow):
@@ -169,25 +160,8 @@ class CGeneralForm(QtWidgets.QWidget):
 
 
 if __name__ == '__main__':
-
     # Запуск формы
     app = QtWidgets.QApplication(sys.argv)
     window = CMainWindow()
     window.show()
     sys.exit(app.exec_())
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

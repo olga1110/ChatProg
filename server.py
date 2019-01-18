@@ -1,25 +1,21 @@
 import sys
 import os
-# sys.path.append(os.path.join(os.getcwd(), 'DB'))
-# sys.path.append(os.path.join(os.getcwd(), 'LIB'))
-
 import argparse
 import socketserver
 import time
 import select
 from socket import socket, AF_INET, SOCK_STREAM
-from sqlalchemy import Column, Integer, Unicode, UniqueConstraint, ForeignKey, create_engine
-from sqlalchemy.orm import sessionmaker, relationship
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 from threading import Thread, RLock
 from queue import Queue
 from Crypto.PublicKey import RSA
 import ssl
 from secrets import token_urlsafe
+
 from LIB.errors import AccountNameError, ResponseCodeError
 from LIB.server_lib import *
 from DB.DB_classes import *
-
 
 from log_config import create_server_log
 
@@ -33,9 +29,6 @@ host = args.host
 port = args.port
 
 # Подключение к базе данных
-# engine = create_engine('sqlite:///messages.db')
-# session = sessionmaker(bind=engine)()
-
 path_db = os.path.join(os.getcwd(), 'DB', 'messages.db')
 engine = create_engine('sqlite:///' + path_db)
 session = sessionmaker(bind=engine)()
@@ -82,9 +75,8 @@ class Server(Thread, metaclass=Singleton):
             try:
                 conn, addr = self.sock.accept()  # Проверка подключений
                 # conn = ssl.wrap_socket(conn, ciphers="AES128-SHA")
-                print('Получен запрос на соединение с %s' % str(addr))
+                logger.debug('Получен запрос на соединение с %s' % str(addr))
                 # получение publickey клиента
-
                 pub_key = RSA.importKey((conn.recv(1024).decode()), passphrase=None)
 
                 while True:
@@ -98,7 +90,7 @@ class Server(Thread, metaclass=Singleton):
                                 self._db.insert_new_user(data)
                             self.handler.send_response_to_client(conn, result)
 
-                    # Запрос на авторизацию (presence)
+                        # Запрос на авторизацию (presence)
                         if data['action'] == 'presence':
                             result = self.handler.create_presence_response(data)
                             self.handler.send_response_to_client(conn, result)
@@ -110,13 +102,13 @@ class Server(Thread, metaclass=Singleton):
                                 self.users[login] = conn
                                 clients.append(conn)
 
-                            # генерируем идентификатор сессии
+                                # генерируем идентификатор сессии
                                 self.sessions[login] = token_urlsafe(64)
                                 conn.send(self.sessions[login].encode('utf-8'))
 
                                 # self.keys[login] = pub_key
                                 # print(self.keys)
-                            #  вставка в табл.op_client
+                                #  вставка в табл.op_client
                                 self._db.insert_op_client(login, addr[0], data['time'])
                                 self.msg_queues[conn] = Queue()
                                 # словарь клиент - открытый ключ
@@ -136,10 +128,8 @@ class HandleThread(Thread):
         super().__init__(daemon=True, target=self.run)
         self.serv_sock = serv_sock
         # self.msg_queues = msg_queues
-        # print(msg_queues)
         self.sock = sock
         self.addr = addr
-        # self.users = users
         self.inputs = []
         self.outputs = []
         self.data = data
@@ -185,18 +175,16 @@ class HandleThread(Thread):
 
                 elif msg['action'] == 'get_key':
                     pub_key = self.serv_sock.keys[msg['user_login']]
-                    print(pub_key)
                     self.sock.send(pub_key.exportKey(format='PEM', passphrase=None, pkcs=1))
                 elif msg['action'] == 'get_contacts':
                     if msg:
-                        print('Получен запрос на отправку списка контактов: {}'.format(msg))
-                        client_contacts = self.list_contacts.get_client_contacts(login, msg['session'], self.serv_sock.sessions, self.sock)
-                        # client_contacts_snd = message_encode(client_contacts)
-                        # self.sock.send(client_contacts_snd)
-                        # self.list_contacts.send_client_contacts(self.sock, login)
+                        logger.debug('Получен запрос на отправку списка контактов: {}'.format(msg))
+                        client_contacts = self.list_contacts.get_client_contacts(login, msg['session'],
+                                                                                 self.serv_sock.sessions, self.sock)
                 elif msg['action'] == 'add_contact' or msg['action'] == 'del_contact':
                     print('Пользовательский запрос на изменение контактов: {}'.format(msg))
-                    result = self.list_contacts.modify_contact(login, msg['session'], self.serv_sock.sessions, msg['action'], msg['user_id'])
+                    result = self.list_contacts.modify_contact(login, msg['session'], self.serv_sock.sessions,
+                                                               msg['action'], msg['user_id'])
                     ServerHandler.send_response_to_client(self.sock, result)
                 elif msg['action'] == 'create_chat':
                     result = self.list_contacts.create_chat(login, msg['session'], self.serv_sock.sessions, msg)
@@ -208,7 +196,6 @@ class HandleThread(Thread):
                     data = self.serv_sock.msg_queues[self.sock].get()
                     print(data)
                     try:
-                        # sent by socket directly
                         self.sock.send(data)
                         print('Сообщение отправлено клиенту!')
                     except OSError as e:
@@ -219,9 +206,3 @@ class HandleThread(Thread):
 
 if __name__ == '__main__':
     sock = Server(host, port, session, engine)
-# sock.mainloop()
-
-
-
-
-

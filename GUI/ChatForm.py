@@ -75,7 +75,7 @@ class CChatForm(QtWidgets.QWidget):
         self.ui.exit_button.clicked.connect(self.close)
         self.ui.Private_RB.setChecked(True)
         self.ui.Chat_RB.toggled.connect(self.hide_contacts)
-        self.to_contact = None
+        self.to_contact = '<Пусто>'
         self.ui.list_contacts_combo.addItem('Выберите контакт')
         self.ui.list_contacts_combo.addItems(self.contacts)
         self.ui.list_contacts_combo.adjustSize()
@@ -118,10 +118,11 @@ class CChatForm(QtWidgets.QWidget):
             to = 'chat'
         else:
             type_msg = 'personal'
+            to = self.to_contact
             if self.to_contact in ('Выберите контакт', '<Пусто>'):
                 QMessageBox.warning(None, 'Warning', 'Получатель не выбран!')
                 return True
-            to = self.to_contact
+
 
         self.thread1 = WriteThread(self.sock, msg, type_msg, to, self.ui.account_name, self.ui.session)
 
