@@ -71,7 +71,15 @@ class CChatForm(QtWidgets.QWidget):
         self.ui.setupUi(self)
         self.ui.user_textBrowser.setText(account_name)
         self.ui.account_name = account_name
+
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap("GUI/Img/send.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.ui.send_button.setIcon(icon)
+        self.ui.send_button.setIconSize(QtCore.QSize(70, 70))
+
         self.ui.send_button.clicked.connect(self.write_message)
+        button_style = 'QPushButton {background-color: #98B9DB; border: 1px solid #E32828; border-radius: 20px;}'
+        self.ui.exit_button.setStyleSheet(button_style)
         self.ui.exit_button.clicked.connect(self.close)
         self.ui.Private_RB.setChecked(True)
         self.ui.Chat_RB.toggled.connect(self.hide_contacts)
@@ -147,8 +155,8 @@ class CChatForm(QtWidgets.QWidget):
 
     def closeEvent(self, event):
         reply = QMessageBox.question(self, 'Message',
-            "Выйти из ЧАТа?", QMessageBox.Yes |
-            QMessageBox.No, QMessageBox.No)
+                                     'Выйти из ChatFree?', QMessageBox.Yes |
+                                     QMessageBox.No, QMessageBox.No)
 
         if reply == QMessageBox.Yes:
             event.accept()

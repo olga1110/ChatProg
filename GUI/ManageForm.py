@@ -17,7 +17,6 @@ class CManageForm(QtWidgets.QWidget):
         self.ui.account_name = account_name
         self.ui.level = level
         self.ui.session = session
-
         button_style = 'QPushButton {background-color: #98B9DB; border: 1px solid #E32828; border-radius: 20px;}'
         self.ui.show_contacts_button.setStyleSheet(button_style)
         self.ui.add_contact_button.setStyleSheet(button_style)
@@ -114,6 +113,12 @@ class CManageForm(QtWidgets.QWidget):
         else:
             return True
 
+    def handle_list_contacts_response(self, chat_name, users_id):
+        self.list_contacts.create_chat(chat_name, users_id, self.ui.session)
+        server_response_rcv = self.ui.sock.recv(4096)
+        server_response = client.ClientHandler.message_decode(server_response_rcv)
+        self.create_message_box('{}\n{}'.format(server_response['result'], server_response['error']),
+                                'Create')
 
     @login_required(2)
     def create_chat(self):
@@ -135,7 +140,6 @@ class CManageForm(QtWidgets.QWidget):
                         QMessageBox.warning(None, 'Warning', 'Не указан логин пользователя!')
                         user_id, ok = QtWidgets.QInputDialog.getText(self, 'Create', 'Введите логин пользователя для '
                                                                                      'добавления в чат: ')
-
                     users_id.append(user_id)
 
                     reply = QMessageBox.question(self, 'Create', 'Продолжить добавление пользователей?',
@@ -143,14 +147,11 @@ class CManageForm(QtWidgets.QWidget):
                                                  QMessageBox.No)
 
                     add_user = 'Y' if reply == QMessageBox.Yes else 'N'
-
-                    self.list_contacts.create_chat(chat_name, users_id, self.ui.session)
-                    server_response_rcv = self.ui.sock.recv(4096)
-                    server_response = client.ClientHandler.message_decode(server_response_rcv)
-                    self.create_message_box('{}\n{}'.format(server_response['result'], server_response['error']),
-                                            'Create')
                 else:
+                    self.handle_list_contacts_response(chat_name, users_id)
                     return True
+
+            self.handle_list_contacts_response(chat_name, users_id)
         else:
             # self.close()
             return True

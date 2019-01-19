@@ -48,7 +48,7 @@ class Server(Thread, metaclass=Singleton):
         self.keys = {}
         self.sessions = {}
         self.handler = ServerHandler(session, engine)
-        self._db = ServerDB(session, engine)
+        self.db = ServerDB(session, engine)
 
         # self.shutdown = False
         try:
@@ -87,7 +87,7 @@ class Server(Thread, metaclass=Singleton):
                         if data['action'] == 'register':
                             result = self.handler.create_registr_response(data)
                             if result['response'] == 200:
-                                self._db.insert_new_user(data)
+                                self.db.insert_new_user(data)
                             self.handler.send_response_to_client(conn, result)
 
                         # Запрос на авторизацию (presence)
@@ -109,7 +109,7 @@ class Server(Thread, metaclass=Singleton):
                                 # self.keys[login] = pub_key
                                 # print(self.keys)
                                 #  вставка в табл.op_client
-                                self._db.insert_op_client(login, addr[0], data['time'])
+                                self.db.insert_op_client(login, addr[0], data['time'])
                                 self.msg_queues[conn] = Queue()
                                 # словарь клиент - открытый ключ
                                 self.keys[login] = pub_key
@@ -161,17 +161,17 @@ class HandleThread(Thread):
 
                 if msg['action'] == 'msg':
                     if msg['type'] == 'chat':
-                        self.serv_sock._db.insert_chat_messages(login, msg['session'], self.serv_sock.sessions, msg)
+                        self.serv_sock.db.insert_chat_messages(login, msg['session'], self.serv_sock.sessions, msg)
                         for c in self.serv_sock.msg_queues:  # Обходим все очереди сообщений
                             if c != self.sock:  # Кроме очереди текущего сокета
                                 self.serv_sock.msg_queues[c].put(msg_buf)
                     elif msg['type'] == 'personal':
                         login_to = msg['to']
-                        if self.serv_sock.users.get('login_to'):
-                            self.serv_sock.msg_queues[self.serv_sock.users[login_to]].put(msg_buf)
-                            self.serv_sock._db.insert_messages(login, msg['session'], self.serv_sock.sessions, msg)
-                        else:
-                            logger.debug(f'Пользователь {login_to} не подключен к сети. Сообщение не доставлено')
+                        # if self.serv_sock.users.get('login_to'):
+                        self.serv_sock.msg_queues[self.serv_sock.users[login_to]].put(msg_buf)
+                        self.serv_sock.db.insert_messages(login, msg['session'], self.serv_sock.sessions, msg)
+                        # else:
+                        #     logger.debug(f'Пользователь {login_to} не подключен к сети. Сообщение не доставлено')
 
                 elif msg['action'] == 'get_key':
                     pub_key = self.serv_sock.keys[msg['user_login']]

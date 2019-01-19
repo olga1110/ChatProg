@@ -49,15 +49,10 @@ class CMainWindow(QtWidgets.QMainWindow):
         self.ui.background_bt.setContentsMargins(0, 0, 0, 0)
         # self.ui.background_bt.adjustSize()
         self.ui.enter_button.clicked.connect(self.get_login_input)
-        self.ui.enter_button.setStyleSheet('QPushButton'
-                                           ' {background-color: #98B9DB;'
-                                           ' border: 1px solid #E32828;'
-                                           ' border-radius: 20px;}')
+        button_style = 'QPushButton {background-color: #98B9DB; border: 1px solid #E32828; border-radius: 20px;}'
+        self.ui.enter_button.setStyleSheet(button_style)
         self.ui.registr_button.clicked.connect(self.make_registr)
-        self.ui.registr_button.setStyleSheet('QPushButton'
-                                             ' {background-color: #98B9DB;'
-                                             ' border: 1px solid #E32828;'
-                                             ' border-radius: 20px;}')
+        self.ui.registr_button.setStyleSheet(button_style)
         self.ui.checkBox_registr.stateChanged.connect(self.show_registr)
         self.ui.online_RB.setChecked(True)
         self.ui.password.setEchoMode(QLineEdit.Password)
@@ -133,17 +128,18 @@ class CMainWindow(QtWidgets.QMainWindow):
             self.ui.general_form.show()
         else:
             self.create_message_box(result['error'], 'Доступ запрещен')
+        self.close()
         return account_name
 
-    def closeEvent(self, event):
-
-        reply = QMessageBox.question(self, 'Message', 'Выйти из ChatFree?',
-                                     QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
-
-        if reply == QMessageBox.Yes:
-            event.accept()
-        else:
-            event.ignore()
+    # def closeEvent(self, event):
+    #
+    #     reply = QMessageBox.question(self, 'Message', 'Выйти из ChatFree?',
+    #                                  QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+    #
+    #     if reply == QMessageBox.Yes:
+    #         event.accept()
+    #     else:
+    #         event.ignore()
 
 
 class CGeneralForm(QtWidgets.QWidget):
@@ -166,11 +162,6 @@ class CGeneralForm(QtWidgets.QWidget):
         self.ui.background_bt.setIcon(icon)
         self.ui.background_bt.adjustSize()
 
-        # icon = QtGui.QIcon()
-        # pixmap = QPixmap('GUI/Img/settings.jpeg')
-        # icon.addPixmap(pixmap)
-        # self.ui.background_bt.setIcon(icon)
-
         icon.addPixmap(QtGui.QPixmap("GUI/Img/settings.jpeg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.ui.contacts_button.setIcon(icon)
         self.ui.contacts_button.setIconSize(QtCore.QSize(50, 50))
@@ -180,14 +171,9 @@ class CGeneralForm(QtWidgets.QWidget):
         self.ui.chat_button.setIcon(icon1)
         self.ui.chat_button.setIconSize(QtCore.QSize(50, 50))
 
-        self.ui.contacts_button.setStyleSheet('QPushButton'
-                                           ' {background-color: #98B9DB;'
-                                           ' border: 1px solid #E32828;'
-                                           ' border-radius: 20px;}')
-        self.ui.chat_button.setStyleSheet('QPushButton'
-                                           ' {background-color: #98B9DB;'
-                                           ' border: 1px solid #E32828;'
-                                           ' border-radius: 20px;}')
+        button_style = 'QPushButton {background-color: #98B9DB; border: 1px solid #E32828; border-radius: 20px;}'
+        self.ui.contacts_button.setStyleSheet(button_style)
+        self.ui.chat_button.setStyleSheet(button_style)
         self.list_contacts = ListContacts(sock)
         self.contacts = []
 
