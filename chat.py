@@ -1,6 +1,6 @@
 import sys
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import QApplication, QWidget, QMessageBox, QLineEdit
+from PyQt5.QtWidgets import QApplication, QWidget, QMessageBox, QLineEdit, QLabel, QMainWindow
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from Crypto.PublicKey import RSA
@@ -33,9 +33,31 @@ class CMainWindow(QtWidgets.QMainWindow):
         super().__init__(parent)
 
         self.ui = ui_class()
+
         self.ui.setupUi(self)
+        # self.ui.centralwidget.setContentsMargins(0, 0, 0, 0)
+        # self.gridLayout = QtWidgets.QGridLayout()
+        # self.gridLayout.setSpacing(0)
+        # self.gridLayout.setContentsMargins(0, 0, 0, 0)
+        self.ui.background_bt.setAutoFillBackground(True)
+        self.ui.background_bt.setWindowOpacity(0.7)
+        self.ui.centralwidget.setWindowFlags(QtCore.Qt.FramelessWindowHint)
+        icon = QtGui.QIcon()
+        pixmap = QPixmap('GUI/Img/main.jpg')
+        icon.addPixmap(pixmap)
+        self.ui.background_bt.setIcon(icon)
+        self.ui.background_bt.setContentsMargins(0, 0, 0, 0)
+        # self.ui.background_bt.adjustSize()
         self.ui.enter_button.clicked.connect(self.get_login_input)
+        self.ui.enter_button.setStyleSheet('QPushButton'
+                                           ' {background-color: #98B9DB;'
+                                           ' border: 1px solid #E32828;'
+                                           ' border-radius: 20px;}')
         self.ui.registr_button.clicked.connect(self.make_registr)
+        self.ui.registr_button.setStyleSheet('QPushButton'
+                                             ' {background-color: #98B9DB;'
+                                             ' border: 1px solid #E32828;'
+                                             ' border-radius: 20px;}')
         self.ui.checkBox_registr.stateChanged.connect(self.show_registr)
         self.ui.online_RB.setChecked(True)
         self.ui.password.setEchoMode(QLineEdit.Password)
@@ -135,6 +157,37 @@ class CGeneralForm(QtWidgets.QWidget):
         self.ui.account_name = account_name
         self.ui.level = level
         self.ui.session = session
+        self.ui.background_bt.setAutoFillBackground(True)
+        self.ui.background_bt.setWindowOpacity(0.7)
+        # self.ui.General_Form.setWindowFlags(QtCore.Qt.FramelessWindowHint)
+        icon = QtGui.QIcon()
+        pixmap = QPixmap('GUI/Img/menu.jpg')
+        icon.addPixmap(pixmap)
+        self.ui.background_bt.setIcon(icon)
+        self.ui.background_bt.adjustSize()
+
+        # icon = QtGui.QIcon()
+        # pixmap = QPixmap('GUI/Img/settings.jpeg')
+        # icon.addPixmap(pixmap)
+        # self.ui.background_bt.setIcon(icon)
+
+        icon.addPixmap(QtGui.QPixmap("GUI/Img/settings.jpeg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.ui.contacts_button.setIcon(icon)
+        self.ui.contacts_button.setIconSize(QtCore.QSize(50, 50))
+
+        icon1 = QtGui.QIcon()
+        icon1.addPixmap(QtGui.QPixmap("GUI/Img/chat.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.ui.chat_button.setIcon(icon1)
+        self.ui.chat_button.setIconSize(QtCore.QSize(50, 50))
+
+        self.ui.contacts_button.setStyleSheet('QPushButton'
+                                           ' {background-color: #98B9DB;'
+                                           ' border: 1px solid #E32828;'
+                                           ' border-radius: 20px;}')
+        self.ui.chat_button.setStyleSheet('QPushButton'
+                                           ' {background-color: #98B9DB;'
+                                           ' border: 1px solid #E32828;'
+                                           ' border-radius: 20px;}')
         self.list_contacts = ListContacts(sock)
         self.contacts = []
 

@@ -17,6 +17,13 @@ class CManageForm(QtWidgets.QWidget):
         self.ui.account_name = account_name
         self.ui.level = level
         self.ui.session = session
+
+        button_style = 'QPushButton {background-color: #98B9DB; border: 1px solid #E32828; border-radius: 20px;}'
+        self.ui.show_contacts_button.setStyleSheet(button_style)
+        self.ui.add_contact_button.setStyleSheet(button_style)
+        self.ui.del_contact_button.setStyleSheet(button_style)
+        self.ui.create_chat_button.setStyleSheet(button_style)
+
         self.ui.show_contacts_button.clicked.connect(self.get_contacts)
         self.ui.add_contact_button.clicked.connect(self.add_contacts)
         self.ui.del_contact_button.clicked.connect(self.del_contacts)
