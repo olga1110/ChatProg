@@ -2,7 +2,9 @@ import sys
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QApplication, QWidget, QMessageBox, QLabel, QComboBox
 from PyQt5.QtCore import *
-# from PyQt5.QtGui import *
+from datetime import datetime
+from time import strftime
+
 from GUI.chat_ui import Ui_Form as ui_chat
 from LIB.client import Client, Chat, ListContacts
 
@@ -71,12 +73,6 @@ class CChatForm(QtWidgets.QWidget):
         self.ui.setupUi(self)
         self.ui.user_textBrowser.setText(account_name)
         self.ui.account_name = account_name
-
-        icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("GUI/Img/send.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.ui.send_button.setIcon(icon)
-        self.ui.send_button.setIconSize(QtCore.QSize(70, 70))
-
         self.ui.send_button.clicked.connect(self.write_message)
         button_style = 'QPushButton {background-color: #98B9DB; border: 1px solid #E32828; border-radius: 20px;}'
         self.ui.exit_button.setStyleSheet(button_style)
@@ -89,6 +85,11 @@ class CChatForm(QtWidgets.QWidget):
         self.ui.list_contacts_combo.adjustSize()
         # self.list_contacts_combo.popupAboutToBeShown.connect(self.populateConbo)
         self.ui.list_contacts_combo.activated[str].connect(self.onActivated)
+
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap("GUI/Img/send.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.ui.send_button.setIcon(icon)
+        self.ui.send_button.setIconSize(QtCore.QSize(70, 70))
 
         self.thread = ReadThread(self.sock)
         self.thread.in_msg.connect(self.on_ReadThreadSignal)
@@ -116,7 +117,7 @@ class CChatForm(QtWidgets.QWidget):
 
     @login_required(3)
     def write_message(self, sock):
-        msg = self.ui.send_mes.toPlainText()
+        msg = self.ui.send_mes.toPlainText() + '[' + datetime.now().time().strftime("%H:%M") + ']'
         if msg == "":
             QMessageBox.warning(None, 'Warning', 'Нельзя отправить пустое сообщение. Введите текст')
             return True

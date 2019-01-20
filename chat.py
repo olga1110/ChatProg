@@ -9,7 +9,7 @@ from GUI.ChatForm import CChatForm
 from GUI.General_form_ui import Ui_General_Form as ui_form
 from GUI.ManageForm import CManageForm
 from LIB.client import Client, Chat, ListContacts
-from DB.DB_classes import *
+
 
 # Параметры подключения клиента
 try:
@@ -35,24 +35,13 @@ class CMainWindow(QtWidgets.QMainWindow):
         self.ui = ui_class()
 
         self.ui.setupUi(self)
-        # self.ui.centralwidget.setContentsMargins(0, 0, 0, 0)
-        # self.gridLayout = QtWidgets.QGridLayout()
-        # self.gridLayout.setSpacing(0)
-        # self.gridLayout.setContentsMargins(0, 0, 0, 0)
-        self.ui.background_bt.setAutoFillBackground(True)
-        self.ui.background_bt.setWindowOpacity(0.7)
-        self.ui.centralwidget.setWindowFlags(QtCore.Qt.FramelessWindowHint)
-        icon = QtGui.QIcon()
-        pixmap = QPixmap('GUI/Img/main.jpg')
-        icon.addPixmap(pixmap)
-        self.ui.background_bt.setIcon(icon)
-        self.ui.background_bt.setContentsMargins(0, 0, 0, 0)
+
+
         # self.ui.background_bt.adjustSize()
         self.ui.enter_button.clicked.connect(self.get_login_input)
-        button_style = 'QPushButton {background-color: #98B9DB; border: 1px solid #E32828; border-radius: 20px;}'
-        self.ui.enter_button.setStyleSheet(button_style)
+
         self.ui.registr_button.clicked.connect(self.make_registr)
-        self.ui.registr_button.setStyleSheet(button_style)
+
         self.ui.checkBox_registr.stateChanged.connect(self.show_registr)
         self.ui.online_RB.setChecked(True)
         self.ui.password.setEchoMode(QLineEdit.Password)
@@ -61,6 +50,18 @@ class CMainWindow(QtWidgets.QMainWindow):
         self.ui.pass_confirm_label.hide()
         self.ui.level_combobox.addItems(['1', '2', '3'])
         self.s = Client(addr, port)
+
+        self.ui.background_bt.setAutoFillBackground(True)
+        self.ui.background_bt.setWindowOpacity(0.7)
+        self.ui.centralwidget.setWindowFlags(QtCore.Qt.FramelessWindowHint)
+        icon = QtGui.QIcon()
+        pixmap = QPixmap('GUI/Img/main.jpg')
+        icon.addPixmap(pixmap)
+        self.ui.background_bt.setIcon(icon)
+        self.ui.background_bt.setContentsMargins(0, 0, 0, 0)
+        button_style = 'QPushButton {background-color: #98B9DB; border: 1px solid #E32828; border-radius: 20px;}'
+        self.ui.enter_button.setStyleSheet(button_style)
+        self.ui.registr_button.setStyleSheet(button_style)
 
         # Генерируем пару ключей
         key = RSA.generate(1024)
@@ -131,16 +132,6 @@ class CMainWindow(QtWidgets.QMainWindow):
         self.close()
         return account_name
 
-    # def closeEvent(self, event):
-    #
-    #     reply = QMessageBox.question(self, 'Message', 'Выйти из ChatFree?',
-    #                                  QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
-    #
-    #     if reply == QMessageBox.Yes:
-    #         event.accept()
-    #     else:
-    #         event.ignore()
-
 
 class CGeneralForm(QtWidgets.QWidget):
 
@@ -153,29 +144,26 @@ class CGeneralForm(QtWidgets.QWidget):
         self.ui.account_name = account_name
         self.ui.level = level
         self.ui.session = session
+        self.list_contacts = ListContacts(sock)
+        self.contacts = []
+
         self.ui.background_bt.setAutoFillBackground(True)
         self.ui.background_bt.setWindowOpacity(0.7)
-        # self.ui.General_Form.setWindowFlags(QtCore.Qt.FramelessWindowHint)
         icon = QtGui.QIcon()
         pixmap = QPixmap('GUI/Img/menu.jpg')
         icon.addPixmap(pixmap)
         self.ui.background_bt.setIcon(icon)
         self.ui.background_bt.adjustSize()
-
         icon.addPixmap(QtGui.QPixmap("GUI/Img/settings.jpeg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.ui.contacts_button.setIcon(icon)
         self.ui.contacts_button.setIconSize(QtCore.QSize(50, 50))
-
         icon1 = QtGui.QIcon()
         icon1.addPixmap(QtGui.QPixmap("GUI/Img/chat.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.ui.chat_button.setIcon(icon1)
         self.ui.chat_button.setIconSize(QtCore.QSize(50, 50))
-
         button_style = 'QPushButton {background-color: #98B9DB; border: 1px solid #E32828; border-radius: 20px;}'
         self.ui.contacts_button.setStyleSheet(button_style)
         self.ui.chat_button.setStyleSheet(button_style)
-        self.list_contacts = ListContacts(sock)
-        self.contacts = []
 
     def get_contacts(self):
         self.list_contacts.client_get_contacts(self.ui.session)
