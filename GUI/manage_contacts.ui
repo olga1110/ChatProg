@@ -6,17 +6,81 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>553</width>
+    <width>464</width>
     <height>485</height>
    </rect>
   </property>
+  <property name="palette">
+   <palette>
+    <active>
+     <colorrole role="Base">
+      <brush brushstyle="SolidPattern">
+       <color alpha="255">
+        <red>255</red>
+        <green>255</green>
+        <blue>255</blue>
+       </color>
+      </brush>
+     </colorrole>
+     <colorrole role="Window">
+      <brush brushstyle="SolidPattern">
+       <color alpha="255">
+        <red>254</red>
+        <green>233</green>
+        <blue>203</blue>
+       </color>
+      </brush>
+     </colorrole>
+    </active>
+    <inactive>
+     <colorrole role="Base">
+      <brush brushstyle="SolidPattern">
+       <color alpha="255">
+        <red>255</red>
+        <green>255</green>
+        <blue>255</blue>
+       </color>
+      </brush>
+     </colorrole>
+     <colorrole role="Window">
+      <brush brushstyle="SolidPattern">
+       <color alpha="255">
+        <red>254</red>
+        <green>233</green>
+        <blue>203</blue>
+       </color>
+      </brush>
+     </colorrole>
+    </inactive>
+    <disabled>
+     <colorrole role="Base">
+      <brush brushstyle="SolidPattern">
+       <color alpha="255">
+        <red>254</red>
+        <green>233</green>
+        <blue>203</blue>
+       </color>
+      </brush>
+     </colorrole>
+     <colorrole role="Window">
+      <brush brushstyle="SolidPattern">
+       <color alpha="255">
+        <red>254</red>
+        <green>233</green>
+        <blue>203</blue>
+       </color>
+      </brush>
+     </colorrole>
+    </disabled>
+   </palette>
+  </property>
   <property name="windowTitle">
-   <string>Form</string>
+   <string>SETTINGS</string>
   </property>
   <widget class="QPushButton" name="create_chat_button">
    <property name="geometry">
     <rect>
-     <x>110</x>
+     <x>80</x>
      <y>40</y>
      <width>311</width>
      <height>81</height>
@@ -29,7 +93,7 @@
   <widget class="QPushButton" name="add_contact_button">
    <property name="geometry">
     <rect>
-     <x>110</x>
+     <x>80</x>
      <y>240</y>
      <width>311</width>
      <height>81</height>
@@ -42,7 +106,7 @@
   <widget class="QPushButton" name="del_contact_button">
    <property name="geometry">
     <rect>
-     <x>110</x>
+     <x>80</x>
      <y>340</y>
      <width>311</width>
      <height>81</height>
@@ -55,7 +119,7 @@
   <widget class="QPushButton" name="show_contacts_button">
    <property name="geometry">
     <rect>
-     <x>110</x>
+     <x>80</x>
      <y>140</y>
      <width>311</width>
      <height>81</height>

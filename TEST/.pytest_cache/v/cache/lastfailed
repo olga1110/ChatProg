@@ -1,4 +1,0 @@
-{
-  "test_lib.py::TestLib::test_check_presence_message": true,
-  "test_lib.py::TestLib::test_check_server_response": true
-}

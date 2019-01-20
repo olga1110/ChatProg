@@ -1,21 +1,17 @@
 import sys
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QApplication, QWidget, QMessageBox
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
 from GUI.manage_contacts_ui import Ui_Form as manage_form
-from LIB.client import Client, Chat, ListContacts
-import LIB.client_lib as client_lib
+import LIB.client as client
 
 
 class CManageForm(QtWidgets.QWidget):
 
-    def __init__(self, sock, mode, account_name, level, session, parent=None):
+    def __init__(self, sock, account_name, level, session, parent=None):
         super().__init__(parent)
         self.ui = manage_form()
         self.ui.setupUi(self)
         self.ui.sock = sock
-        self.ui.mode = mode
         self.ui.account_name = account_name
         self.ui.level = level
         self.ui.session = session
@@ -23,7 +19,13 @@ class CManageForm(QtWidgets.QWidget):
         self.ui.add_contact_button.clicked.connect(self.add_contacts)
         self.ui.del_contact_button.clicked.connect(self.del_contacts)
         self.ui.create_chat_button.clicked.connect(self.create_chat)
-        self.list_contacts = ListContacts(sock)
+        self.list_contacts = client.ListContacts(sock)
+
+        button_style = 'QPushButton {background-color: #98B9DB; border: 1px solid #E32828; border-radius: 20px;}'
+        self.ui.show_contacts_button.setStyleSheet(button_style)
+        self.ui.add_contact_button.setStyleSheet(button_style)
+        self.ui.del_contact_button.setStyleSheet(button_style)
+        self.ui.create_chat_button.setStyleSheet(button_style)
 
     def login_required(r_level):
         def decorator(func):
@@ -34,9 +36,12 @@ class CManageForm(QtWidgets.QWidget):
                     result = func(self)
                     return result
                 else:
-                    QMessageBox.warning(None, 'Warning','Для выполнения данной операции необходим {}-й уровень доступа'.format(r_level))
+                    QMessageBox.warning(None, 'Warning',
+                                        'Для выполнения данной операции необходим {}-й уровень доступа'.format(r_level))
                     return
+
             return decorated2
+
         return decorator
 
     def create_message_box(self, text, title):
@@ -68,71 +73,82 @@ class CManageForm(QtWidgets.QWidget):
     def add_contacts(self):
         action = 'add_contact'
         nickname, ok = QtWidgets.QInputDialog.getText(self, 'Добавить контакт',
-                                                'Введите логин для добавления пользователя: ')
-
-        while nickname == "":
-            QMessageBox.warning(None, 'Warning', 'Не указан логин пользователя!')
-            nickname, ok = QtWidgets.QInputDialog.getText(self, 'Добавить контакт',
-                                                          'Введите логин для добавления пользователя: ')
-
+                                                      'Введите логин для добавления пользователя: ')
         if ok:
+            while nickname == "":
+                QMessageBox.warning(None, 'Warning', 'Не указан логин пользователя!')
+                nickname, ok = QtWidgets.QInputDialog.getText(self, 'Добавить контакт',
+                                                              'Введите логин для добавления пользователя: ')
             self.list_contacts.get_request_modify(action, nickname, self.ui.session)
             server_response_rcv = self.ui.sock.recv(4096)
-            server_response = client_lib.message_decode(server_response_rcv)
+            server_response = client.ClientHandler.message_decode(server_response_rcv)
             if server_response['response'] == 202:
                 self.create_message_box('Операция выполнена успешно', 'Добавить контакт')
             else:
                 self.create_message_box(server_response['error'], 'Добавить контакт')
+        else:
+            return True
 
     @login_required(1)
     def del_contacts(self):
         action = 'del_contact'
         nickname, ok = QtWidgets.QInputDialog.getText(self, 'Удалить контакт',
-                                                'Введите логин для удаления пользователя: ')
-        while nickname == "":
-            QMessageBox.warning(None, 'Warning', 'Не указан логин пользователя!')
-            nickname, ok = QtWidgets.QInputDialog.getText(self, 'Удалить контакт',
-                                                          'Введите логин для удаления пользователя: ')
-
+                                                      'Введите логин для удаления пользователя: ')
         if ok:
-            self.list_contacts.get_request_modify(action, nickname)
+            while nickname == "":
+                QMessageBox.warning(None, 'Warning', 'Не указан логин пользователя!')
+                nickname, ok = QtWidgets.QInputDialog.getText(self, 'Удалить контакт',
+                                                              'Введите логин для удаления пользователя: ')
+
+            self.list_contacts.get_request_modify(action, nickname, self.ui.session)
             server_response_rcv = self.ui.sock.recv(4096)
-            server_response = client_lib.message_decode(server_response_rcv)
+            server_response = client.ClientHandler.message_decode(server_response_rcv)
             if server_response['response'] == 202:
                 self.create_message_box('Операция выполнена успешно', 'Удалить контакт')
             else:
                 self.create_message_box(server_response['error'], 'Удалить контакт')
+        else:
+            return True
+
+    def handle_list_contacts_response(self, chat_name, users_id):
+        self.list_contacts.create_chat(chat_name, users_id, self.ui.session)
+        server_response_rcv = self.ui.sock.recv(4096)
+        server_response = client.ClientHandler.message_decode(server_response_rcv)
+        self.create_message_box('{}\n{}'.format(server_response['result'], server_response['error']),
+                                'Create')
 
     @login_required(2)
     def create_chat(self):
         users_id = []
 
         chat_name, ok = QtWidgets.QInputDialog.getText(self, 'Create',
-                                                      'Задайте имя чата: ')
-        while chat_name == "":
-            QMessageBox.warning(None, 'Warning', 'Не указано имя чата!')
-            chat_name, ok = QtWidgets.QInputDialog.getText(self, 'Создание чата',
-                                                           'Задайте имя чата: ')
+                                                       'Задайте имя чата: ')
         if ok:
+            while chat_name == "":
+                QMessageBox.warning(None, 'Warning', 'Не указано имя чата!')
+                chat_name, ok = QtWidgets.QInputDialog.getText(self, 'Создание чата',
+                                                               'Задайте имя чата: ')
             add_user = 'Y'
             while add_user == 'Y':
                 user_id, ok = QtWidgets.QInputDialog.getText(self, 'Create',
-                                                               'Введите логин пользователя для добавления в чат: ')
-                while user_id == "":
-                    QMessageBox.warning(None, 'Warning', 'Не указан логин пользователя!')
-                    user_id, ok = QtWidgets.QInputDialog.getText(self, 'Create',
-                                                                 'Введите логин пользователя для добавления в чат: ')
+                                                             'Введите логин пользователя для добавления в чат: ')
                 if ok:
+                    while user_id == "":
+                        QMessageBox.warning(None, 'Warning', 'Не указан логин пользователя!')
+                        user_id, ok = QtWidgets.QInputDialog.getText(self, 'Create', 'Введите логин пользователя для '
+                                                                                     'добавления в чат: ')
                     users_id.append(user_id)
 
-                reply = QMessageBox.question(self, 'Create', 'Продолжить добавление пользователей?',
-                                     QMessageBox.Yes | QMessageBox.No,
-                                     QMessageBox.No)
+                    reply = QMessageBox.question(self, 'Create', 'Продолжить добавление пользователей?',
+                                                 QMessageBox.Yes | QMessageBox.No,
+                                                 QMessageBox.No)
 
-                add_user = 'Y' if reply == QMessageBox.Yes else 'N'
+                    add_user = 'Y' if reply == QMessageBox.Yes else 'N'
+                else:
+                    self.handle_list_contacts_response(chat_name, users_id)
+                    return True
 
-
-            self.list_contacts.create_chat(chat_name, users_id, self.ui.session)
-            server_response_rcv = self.ui.sock.recv(4096)
-            server_response = client_lib.message_decode(server_response_rcv)
-            self.create_message_box('{}\n{}'.format(server_response['result'], server_response['error']), 'Create')
+            self.handle_list_contacts_response(chat_name, users_id)
+        else:
+            # self.close()
+            return True

@@ -6,20 +6,20 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>668</width>
-    <height>452</height>
+    <width>405</width>
+    <height>303</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Form</string>
+   <string>Menu</string>
   </property>
   <widget class="QPushButton" name="contacts_button">
    <property name="geometry">
     <rect>
-     <x>130</x>
-     <y>60</y>
-     <width>451</width>
-     <height>101</height>
+     <x>50</x>
+     <y>-10</y>
+     <width>291</width>
+     <height>91</height>
     </rect>
    </property>
    <property name="font">
@@ -28,37 +28,91 @@
     </font>
    </property>
    <property name="text">
-    <string>Управление контактами</string>
+    <string>Settings</string>
+   </property>
+   <property name="icon">
+    <iconset>
+     <normaloff>Img/settings.jpeg</normaloff>Img/settings.jpeg</iconset>
+   </property>
+   <property name="iconSize">
+    <size>
+     <width>50</width>
+     <height>50</height>
+    </size>
    </property>
   </widget>
-  <widget class="QPushButton" name="chat_button">
+  <widget class="QPushButton" name="background_bt">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
    <property name="geometry">
     <rect>
-     <x>130</x>
-     <y>200</y>
-     <width>451</width>
-     <height>101</height>
+     <x>0</x>
+     <y>0</y>
+     <width>412</width>
+     <height>306</height>
     </rect>
    </property>
-   <property name="font">
-    <font>
-     <pointsize>14</pointsize>
-    </font>
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Ignored" vsizetype="Ignored">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
    </property>
    <property name="text">
     <string/>
    </property>
    <property name="icon">
     <iconset>
-     <normaloff>Img/messanger.jpeg</normaloff>Img/messanger.jpeg</iconset>
+     <normaloff>Img/menu.jpg</normaloff>Img/menu.jpg</iconset>
    </property>
    <property name="iconSize">
     <size>
-     <width>1000</width>
+     <width>400</width>
      <height>300</height>
     </size>
    </property>
+   <property name="shortcut">
+    <string/>
+   </property>
+   <property name="autoRepeatDelay">
+    <number>0</number>
+   </property>
+   <property name="autoRepeatInterval">
+    <number>0</number>
+   </property>
   </widget>
+  <widget class="QPushButton" name="chat_button">
+   <property name="geometry">
+    <rect>
+     <x>50</x>
+     <y>220</y>
+     <width>291</width>
+     <height>91</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>14</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string>CHAT</string>
+   </property>
+   <property name="icon">
+    <iconset>
+     <normaloff>Img/chat.png</normaloff>Img/chat.png</iconset>
+   </property>
+   <property name="iconSize">
+    <size>
+     <width>50</width>
+     <height>50</height>
+    </size>
+   </property>
+  </widget>
+  <zorder>background_bt</zorder>
+  <zorder>contacts_button</zorder>
+  <zorder>chat_button</zorder>
  </widget>
  <resources/>
  <connections/>
